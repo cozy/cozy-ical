@@ -1,6 +1,6 @@
 time = require 'time'
 moment = require 'moment'
-{VCalendar, VEvent} = require '../../lib/ical_helpers'
+{VCalendar, VEvent} = require './index'
 
 module.exports = (compound, Event) ->
 
