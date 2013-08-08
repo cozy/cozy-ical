@@ -4,7 +4,7 @@
   "description": "Cozy-Ical provides ICal Parser and Objects",
   "main": "src/index.coffee",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cake tests"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,10 @@
   "dependencies": {
     "moment": "~2.1.0",
     "lazy": "~1.0.11"
+  },
+  "devDependencies": {
+    "mocha": "~1.12.0",
+    "should": "~1.2.0",
+    "chai": "~1.7.2"
   }
 }
