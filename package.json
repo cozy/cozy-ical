@@ -1,0 +1,24 @@
+{
+  "name": "cozy-ical",
+  "version": "0.0.1",
+  "description": "Cozy-Ical provides ICal Parser and Objects",
+  "main": "src/index.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aenario/cozy-ical"
+  },
+  "keywords": [
+    "ical",
+    "cozy"
+  ],
+  "author": "Cozy",
+  "license": "see LICENSE",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "moment": "~2.1.0",
+    "lazy": "~1.0.11"
+  }
+}
