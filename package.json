@@ -19,6 +19,7 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "moment": "~2.1.0",
+    "coffee-script": "= 1.4.0",
     "lazy": "~1.0.11"
   },
   "devDependencies": {
