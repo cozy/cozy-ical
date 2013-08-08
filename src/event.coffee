@@ -2,7 +2,7 @@ time = require 'time'
 moment = require 'moment'
 {VCalendar, VEvent} = require './index'
 
-module.exports = (compound, Event) ->
+module.exports = (Event) ->
 
     Event::toIcal = (user, timezone) ->
         startDate = new time.Date @start
