@@ -179,6 +179,23 @@ module.exports.ICalParser = class ICalParser
     parseFile: (file, callback) ->
         @parse fs.createReadStream(file), callback
 
+    parseString: (string, callback) ->
+        class FakeStream extends require('events').EventEmitter
+            readable: true
+            writable: false
+            setEncoding: -> throw 'not implemented'
+            pipe: -> throw 'not implemented'
+            destroy: ->  # nothing to do
+            resume: ->   # nothing to do
+            pause: ->    # nothing to do
+            send: (string) ->
+                @emit 'data', string
+                @emit 'end'
+
+        fakeStream = new FakeStream
+        @parse fakeStream, callback
+        fakeStream.send string
+
     parse: (stream, callback) ->
         result = {}
         noerror = true

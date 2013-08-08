@@ -181,3 +181,27 @@ describe "Calendar export/import", ->
                     should.not.exist err
                     #result.toString().should.equal expectedContent
                     done()
+
+        describe 'parse ical string', ->
+
+            it 'should return a well formed vCalendar object', (done) ->
+                parser = new ICalParser
+                parser.parseString """
+                    BEGIN:VCALENDAR
+                    VERSION:2.0
+                    PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
+                    BEGIN:VTODO
+                    DTSTAMP:20130609T150000
+                    SUMMARY:ma description
+                    UID:superuser
+                    BEGIN:VALARM
+                    ACTION:AUDIO
+                    REPEAT:1
+                    TRIGGER:20130609T150000
+                    END:VALARM
+                    END:VTODO
+                    END:VCALENDAR"""
+                , (err, result) ->
+                    should.not.exist err
+                    #result.toString().should.equal expectedContent
+                    done()

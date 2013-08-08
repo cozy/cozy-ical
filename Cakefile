@@ -47,6 +47,17 @@ task 'tests:client', 'run client tests through mocha', (opts) ->
 
         console.log stdout
 
+task "build", "", ->
+    console.log "Compile main file..."
+    command = "coffee --compile --output lib/ src/"
+    exec command, (err, stdout, stderr) ->
+        if err
+            console.log "Running coffee-script compiler caught exception: \n" + err
+        else
+            console.log "Compilation succeeds."
+
+        console.log stdout
+
 
 runTests = (fileList) ->
     command = "NODE_ENV='test' mocha " + fileList.join(" ") + " "
