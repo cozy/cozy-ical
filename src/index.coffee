@@ -86,12 +86,12 @@ module.exports.VAlarm = class VAlarm extends VComponent
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (date, user, description) ->
+    constructor: (date, uid, description) ->
         super
         @fields =
             DTSTAMP: @formatIcalDate date
             SUMMARY: description
-            UID: user
+            UID: uid
 
     addAlarm: (date) ->
         @add new VAlarm date

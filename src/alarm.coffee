@@ -15,9 +15,8 @@ module.exports = (Alarm) ->
     Alarm::toIcal = (timezone) ->
         date = new time.Date @trigg
         date.setTimezone timezone, false
-        vtodo = new VTodo date, user, @description
+        vtodo = new VTodo date, @id, @description
         vtodo.addAlarm date
-        vtodo.fields['UID'] = @id
         vtodo
 
     Alarm.fromIcal = (valarm, timezone = "UTC") ->
