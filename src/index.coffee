@@ -79,7 +79,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
         @fields =
             ACTION: 'DISPLAY'
             REPEAT: '1'
-            TRIGGER: @formatIcalDate date
+            TRIGGER: @formatIcalDate(date) + 'Z'
 
 
 # The VTodo is used to described a dated action.
@@ -104,8 +104,8 @@ module.exports.VEvent = class VEvent extends VComponent
         super
         @fields =
             DESCRIPTION: description
-            DTSTART:     @formatIcalDate startDate
-            DTEND:       @formatIcalDate endDate
+            DTSTART:     @formatIcalDate(startDate) + 'Z'
+            DTEND:       @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
             UID:         uid
 
@@ -137,6 +137,8 @@ module.exports.VTimezone = class VTimezone extends VComponent
         super
         @fields =
             TZID: timezone
+            TZURL: "http://tzurl.org/zoneinfo/#{timezone}.ics"
+
         # startShift and endShift are equal because, actually, only alarm has timezone
         diff = formatUTCOffset startDate, timezone
         vstandard = new VStandard startDate, diff, diff

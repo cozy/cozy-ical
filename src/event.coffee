@@ -5,8 +5,10 @@ moment = require 'moment'
 module.exports = (Event) ->
 
     Event::toIcal = (timezone = "UTC") ->
-        startDate = new time.Date @start, timezone
-        endDate   = new time.Date @end, timezone
+        startDate = new time.Date @start
+        endDate   = new time.Date @end
+        startDate.setTimezone timezone, false
+        endDate.setTimezone timezone, false
         new VEvent startDate, endDate, @description, @place, @id
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
