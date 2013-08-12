@@ -104,33 +104,34 @@ describe "Calendar export/import", ->
                 valarm = new VAlarm date
                 valarm.toString().should.equal """
                     BEGIN:VALARM
-                    ACTION:AUDIO
+                    ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000
+                    TRIGGER:20130609T150000Z
                     END:VALARM""".replace(/\n/g, '\r\n')
 
         describe 'get vTodo string', ->
             it 'should return default vTodo string', ->
                 date = new Date 2013, 5, 9, 15, 0, 0
-                vtodo = new VTodo date, "superuser", "ma description"
+                vtodo = new VTodo date, "3615", "ma description"
                 vtodo.toString().should.equal """
                     BEGIN:VTODO
-                    DTSTAMP:20130609T150000
+                    DTSTAMP:20130609T150000Z
                     SUMMARY:ma description
-                    UID:superuser
+                    UID:3615
                     END:VTODO""".replace(/\n/g, '\r\n')
 
         describe 'get vEvent string', ->
             it 'should return default vEvent string', ->
                 startDate = new Date 2013, 5, 9, 15, 0, 0
                 endDate = new Date 2013, 5, 10, 15, 0, 0
-                vevent = new VEvent startDate, endDate, "desc", "loc"
+                vevent = new VEvent startDate, endDate, "desc", "loc", "3615"
                 vevent.toString().should.equal """
                     BEGIN:VEVENT
                     DESCRIPTION:desc
-                    DTSTART:20130609T150000
-                    DTEND:20130610T150000
+                    DTSTART:20130609T150000Z
+                    DTEND:20130610T150000Z
                     LOCATION:loc
+                    UID:3615
                     END:VEVENT""".replace(/\n/g, '\r\n')
 
 
@@ -147,13 +148,13 @@ describe "Calendar export/import", ->
                     VERSION:2.0
                     PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
                     BEGIN:VTODO
-                    DTSTAMP:20130609T150000
+                    DTSTAMP:20130609T150000Z
                     SUMMARY:ma description
                     UID:superuser
                     BEGIN:VALARM
-                    ACTION:AUDIO
+                    ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000
+                    TRIGGER:20130609T150000Z
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR""".replace(/\n/g, '\r\n')
@@ -191,13 +192,13 @@ describe "Calendar export/import", ->
                     VERSION:2.0
                     PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
                     BEGIN:VTODO
-                    DTSTAMP:20130609T150000
+                    DTSTAMP:20130609T150000Z
                     SUMMARY:ma description
                     UID:superuser
                     BEGIN:VALARM
-                    ACTION:AUDIO
+                    ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000
+                    TRIGGER:20130609T150000Z
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR"""

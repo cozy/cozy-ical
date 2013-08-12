@@ -89,7 +89,7 @@ module.exports.VTodo = class VTodo extends VComponent
     constructor: (date, uid, description) ->
         super
         @fields =
-            DTSTAMP: @formatIcalDate date
+            DTSTAMP: @formatIcalDate(date) + 'Z'
             SUMMARY: description
             UID: uid
 
