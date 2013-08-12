@@ -51,6 +51,11 @@ module.exports.VComponent = class VComponent
     add: (component) ->
         @subComponents.push component
 
+    walk: (walker) ->
+        walker this
+        sub.walk walker for sub in @subComponents
+
+
 
 # Calendar component. It's the representation of the root object of a Calendar.
 module.exports.VCalendar = class VCalendar extends VComponent
@@ -72,7 +77,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
     constructor: (date) ->
         super
         @fields =
-            ACTION: 'AUDIO'
+            ACTION: 'DISPLAY'
             REPEAT: '1'
             TRIGGER: @formatIcalDate date
 
@@ -95,13 +100,14 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, description, location) ->
+    constructor: (startDate, endDate, description, location, uid) ->
         super
         @fields =
             DESCRIPTION: description
-            DTSTART: @formatIcalDate startDate
-            DTEND: @formatIcalDate endDate
-            LOCATION: location
+            DTSTART:     @formatIcalDate startDate
+            DTEND:       @formatIcalDate endDate
+            LOCATION:    location
+            UID:         uid
 
 formatUTCOffset = (startDate, timezone) ->
     if timezone? and startDate?

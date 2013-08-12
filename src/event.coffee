@@ -4,39 +4,33 @@ moment = require 'moment'
 
 module.exports = (Event) ->
 
-    Event::toIcal = (user, timezone) ->
-        startDate = new time.Date @start
-        endDate = new time.Date @end
-        startDate.setTimezone timezone, false
-        endDate.setTimezone timezone, false
-        out = new VEvent startDate, endDate, @description, @place
-        out.fields['UID'] = @id
-        out
+    Event::toIcal = (timezone = "UTC") ->
+        startDate = new time.Date @start, timezone
+        endDate   = new time.Date @end, timezone
+        new VEvent startDate, endDate, @description, @place, @id
 
-    Event.fromIcal = (vevent) ->
+    Event.fromIcal = (vevent, timezone = "UTC") ->
         event = new Event()
-        description = vevent.fields["DESCRIPTION"]
-        description = vevent.fields["SUMMARY"] unless description?
-        event.description = description
+        event.description = vevent.fields["DESCRIPTION"]
+        event.description ?= vevent.fields["SUMMARY"]
         event.place = vevent.fields["LOCATION"]
         startDate = vevent.fields["DTSTART"]
         startDate = moment startDate, "YYYYMMDDTHHmm00"
-        startDate = new time.Date new Date(startDate), 'UTC'
+        startDate = new time.Date new Date(startDate), timezone
         endDate = vevent.fields["DTEND"]
         endDate = moment endDate, "YYYYMMDDTHHmm00"
-        endDate = new time.Date new Date(endDate), 'UTC'
+        endDate = new time.Date new Date(endDate), timezone
+        event.timezone = timezone
         event.start = startDate.toString().slice(0, 24)
         event.end = endDate.toString().slice(0, 24)
         event
 
-    Event.extractEvents = (component) ->
+    Event.extractEvents = (component, timezone) ->
         events = []
-        walker = (component) ->
-            events.push Event.fromIcal component if component.name is 'VEVENT'
+        component.walk (component) ->
+            if component.name is 'VTIMEZONE'
+                timezone = component.fields["TZID"]
+            if component.name is 'VEVENT'
+                events.push Event.fromIcal component, timezone
 
-            if component.subComponents?.length isnt 0
-                for subComponent in component.subComponents
-                    walker subComponent
-
-        walker component
         events
