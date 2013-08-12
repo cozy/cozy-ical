@@ -2,7 +2,7 @@
   "name": "cozy-ical",
   "version": "0.0.3",
   "description": "Cozy-Ical provides ICal Parser and Objects",
-  "main": "src/index.coffee",
+  "main": "lib/index.js",
   "scripts": {
     "test": "cake tests"
   },
@@ -19,10 +19,10 @@
   "readmeFilename": "README.md",
   "dependencies": {
     "moment": "~2.1.0",
-    "coffee-script": "= 1.4.0",
     "lazy": "~1.0.11"
   },
   "devDependencies": {
+    "coffee-script": "= 1.4.0",
     "mocha": "~1.12.0",
     "should": "~1.2.0",
     "chai": "~1.7.2"
