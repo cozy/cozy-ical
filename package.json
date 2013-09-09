@@ -1,6 +1,6 @@
 {
   "name": "cozy-ical",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Cozy-Ical provides ICal Parser and Objects",
   "main": "lib/index.js",
   "scripts": {
