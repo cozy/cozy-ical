@@ -1,8 +1,8 @@
 time = require 'time'
 moment = require 'moment'
-{VCalendar, VEvent} = require './index'
 
 module.exports = (Event) ->
+    {VCalendar, VEvent} = require './index'
 
     Event::toIcal = (timezone = "UTC") ->
         startDate = new time.Date @start

@@ -1,8 +1,8 @@
 time = require 'time'
 moment = require 'moment'
-{VCalendar, VTodo, VAlarm, VTimezone} = require './index'
 
 module.exports = (Alarm) ->
+    {VCalendar, VTodo, VAlarm, VTimezone} = require './index'
 
     Alarm.getICalCalendar = ->
         calendar = new VCalendar 'Cozy Cloud', 'Cozy Agenda'
