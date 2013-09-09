@@ -2,6 +2,9 @@ fs = require 'fs'
 moment = require 'moment'
 lazy = require 'lazy'
 
+module.exports.decorateAlarm = require './alarm'
+module.exports.decorateEvent = require './event'
+
 # Small module to generate iCal file from JS Objects or to parse iCal file
 # to obtain explicit JS Objects.
 #
