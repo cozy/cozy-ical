@@ -18,16 +18,19 @@ var VCalendar = require('cozy-ical').VCalendar;
 var VEvent = require('cozy-ical').VEvent;
 var VTodo = require('cozy-ical').VTodo;
 
-var date = new Date(2013, 5, 9, 15, 0, 0);
 var cal = new VCalendar('Cozy Cloud', 'Cozy Calendar');
+
+var date = new Date(2013, 5, 9, 15, 0, 0);
 var vtodo = new VTodo(date, 'jhon', 'my description');
 
 var startDate = new Date(2013, 5, 9, 15, 0, 0);
-endDate = new Date(2013, 5, 10, 15, 0, 0);
-vevent = new VEvent(startDate, endDate, "desc", "loc", "3615");
+var endDate = new Date(2013, 5, 10, 15, 0, 0);
+var vevent = new VEvent(startDate, endDate, "desc", "loc", "3615");
+
 vtodo.addAlarm(date);
 cal.add(vtodo);
 cal.add(vevent);
+
 cal.toString();
 ```
 
@@ -85,10 +88,10 @@ parser.parseString(calString, function(err, cal) {
 
 output:
 
-  VCALENDAR
-  -//Cozy Cloud//NONSGML Cozy Agenda//EN
-  VTODO
-  my description
+    VCALENDAR
+    -//Cozy Cloud//NONSGML Cozy Agenda//EN
+    VTODO
+    my description
   
   
 
