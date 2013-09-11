@@ -106,7 +106,7 @@ module.exports.VEvent = class VEvent extends VComponent
     constructor: (startDate, endDate, description, location, uid) ->
         super
         @fields =
-            DESCRIPTION: description
+            SUMMARY:     description
             DTSTART:     @formatIcalDate(startDate) + 'Z'
             DTEND:       @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
