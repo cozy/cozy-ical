@@ -23,7 +23,7 @@ describe "Calendar export/import", ->
                     BEGIN:VALARM
                     ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000Z
+                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
                     END:VALARM""".replace(/\n/g, '\r\n')
 
         describe 'get vTodo string', ->
@@ -44,9 +44,9 @@ describe "Calendar export/import", ->
                 vevent = new VEvent startDate, endDate, "desc", "loc", "3615"
                 vevent.toString().should.equal """
                     BEGIN:VEVENT
-                    DESCRIPTION:desc
-                    DTSTART:20130609T150000Z
-                    DTEND:20130610T150000Z
+                    SUMMARY:desc
+                    DTSTART;VALUE=DATE-TIME:20130609T150000Z
+                    DTEND;VALUE=DATE-TIME:20130610T150000Z
                     LOCATION:loc
                     UID:3615
                     END:VEVENT""".replace(/\n/g, '\r\n')
@@ -71,7 +71,7 @@ describe "Calendar export/import", ->
                     BEGIN:VALARM
                     ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000Z
+                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR""".replace(/\n/g, '\r\n')
@@ -115,7 +115,7 @@ describe "Calendar export/import", ->
                     BEGIN:VALARM
                     ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER:20130609T150000Z
+                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR"""
