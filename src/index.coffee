@@ -82,7 +82,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
         @fields =
             ACTION: 'DISPLAY'
             REPEAT: '1'
-            TRIGGER: @formatIcalDate(date) + 'Z'
+            "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
 
 
 # The VTodo is used to described a dated action.
@@ -106,9 +106,9 @@ module.exports.VEvent = class VEvent extends VComponent
     constructor: (startDate, endDate, description, location, uid) ->
         super
         @fields =
-            DESCRIPTION: description
-            DTSTART:     @formatIcalDate(startDate) + 'Z'
-            DTEND:       @formatIcalDate(endDate) + 'Z'
+            SUMMARY:     description
+            "DTSTART;VALUE=DATE-TIME": @formatIcalDate(startDate) + 'Z'
+            "DTEND;VALUE=DATE-TIME":   @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
             UID:         uid
 
