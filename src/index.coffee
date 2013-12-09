@@ -213,8 +213,10 @@ module.exports.ICalParser = class ICalParser
         lineNumber = 0
         component = null
         parent = null
+        completeLine = null
 
         stream.on 'end', ->
+            lineParser completeLine if completeLine
             callback null, result if noerror
 
         sendError = (msg) ->
@@ -243,8 +245,7 @@ module.exports.ICalParser = class ICalParser
         lineParser = (line) ->
             lineNumber++
 
-            line = line.toString('utf-8').trim()
-            tuple = line.split(':')
+            tuple = line.trim().split(':')
 
             if tuple.length < 2
                 sendError "Malformed ical file"
@@ -265,4 +266,10 @@ module.exports.ICalParser = class ICalParser
                 else
                     sendError "Malformed ical file"
 
-        lazy(stream).lines.forEach lineParser
+        lazy(stream).lines.forEach (line) ->
+            line = line.toString('utf-8').replace("\r", '')
+            if line[0] is ' '
+                completeLine += line.substring 1
+            else
+                lineParser completeLine if completeLine
+                completeLine = line

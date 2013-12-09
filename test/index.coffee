@@ -97,6 +97,8 @@ describe "Calendar export/import", ->
                 parser = new ICalParser
                 parser.parseFile 'test/google.ics', (err, result) ->
                     should.not.exist err
+                    desc = result.subComponents[1].fields['DESCRIPTION']
+                    desc.indexOf('complet qu').should.not.equal -1
                     #result.toString().should.equal expectedContent
                     done()
 
