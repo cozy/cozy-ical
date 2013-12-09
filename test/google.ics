@@ -30,8 +30,8 @@ RRULE:FREQ=WEEKLY;BYDAY=WE,TH
 DTSTAMP:20130729T150353Z
 UID:8l8ib6mvg28f51506bn3u5fihs@google.com
 CREATED:20130729T150300Z
-DESCRIPTION:un événement plus complet
- tellement complet
+DESCRIPTION:un événement plus complet tel
+ lement complet
   qu'il utilise une multiligne
 LAST-MODIFIED:20130729T150331Z
 LOCATION:dans un lieu plus complet

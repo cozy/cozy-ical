@@ -1,4 +1,6 @@
-{ICalParser, VCalendar, VAlarm, VTodo, VEvent} = require '../lib/index'
+main = require '../lib/index'
+{ICalParser, VCalendar, VAlarm, VTodo, VEvent} = main
+{decorateAlarm, decorateEvent} = main
 should = require 'should'
 
 helpers = null
@@ -98,7 +100,7 @@ describe "Calendar export/import", ->
                 parser.parseFile 'test/google.ics', (err, result) ->
                     should.not.exist err
                     desc = result.subComponents[1].fields['DESCRIPTION']
-                    desc.indexOf('complet qu').should.not.equal -1
+                    desc.indexOf('tellement complet qu').should.not.equal -1
                     #result.toString().should.equal expectedContent
                     done()
 
@@ -125,3 +127,56 @@ describe "Calendar export/import", ->
                     should.not.exist err
                     #result.toString().should.equal expectedContent
                     done()
+
+        describe 'decorators', ->
+
+            Alarm = class Alarm
+            Event = class Event
+
+            it 'should decorate without error', ->
+                decorateAlarm Alarm
+                decorateEvent Event
+
+            it 'should add Alarm.extractAlarms', (done) ->
+
+                new ICalParser().parseString """
+                    BEGIN:VCALENDAR
+                    VERSION:2.0
+                    PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
+                    BEGIN:VTODO
+                    SUMMARY:this is a title
+                    UID:3615
+                    BEGIN:VALARM
+                    ACTION:DISPLAY
+                    REPEAT:1
+                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
+                    END:VALARM
+                    END:VTODO
+                    END:VCALENDAR
+                """, (err, comp) =>
+                    should.not.exist err
+                    @alarm = Alarm.extractAlarms(comp)[0]
+                    @alarm.id.should.equal '3615'
+                    @alarm.description.should.equal 'this is a title'
+                    done()
+
+            it 'and Alarm::toIcal()', ->
+                ical = @alarm.toIcal()
+                ical.fields['SUMMARY'].should.equal ical.fields['DESCRIPTION']
+
+
+            it 'should add Event.extractEvents', (done) ->
+
+                new ICalParser().parseFile 'test/google.ics', (err, comp) =>
+                    should.not.exist err
+                    @event = Event.extractEvents(comp)[1]
+                    @event.timezone.should.equal 'Europe/Paris'
+                    @event.description.should.equal 'Un événement'
+                    should.exist @event.details
+                    done()
+
+            it 'and Event::toIcal()', ->
+                ical = @event.toIcal()
+                ical.fields['DESCRIPTION'].should.equal """
+                    description de l'événement
+                """
