@@ -89,12 +89,14 @@ module.exports.VAlarm = class VAlarm extends VComponent
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (date, uid, description) ->
+    constructor: (date, uid, summary, description) ->
         super
         @fields =
             DTSTAMP: @formatIcalDate(date) + 'Z'
-            SUMMARY: description
+            SUMMARY: summary
             UID: uid
+
+        @fields.DESCRIPTION = description if description?
 
     addAlarm: (date) ->
         @add new VAlarm date
@@ -103,14 +105,16 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, description, location, uid) ->
+    constructor: (startDate, endDate, summary, location, uid, description) ->
         super
         @fields =
-            SUMMARY:     description
+            SUMMARY:     summary
             "DTSTART;VALUE=DATE-TIME": @formatIcalDate(startDate) + 'Z'
             "DTEND;VALUE=DATE-TIME":   @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
             UID:         uid
+
+        @fields.DESCRIPTION = description if description?
 
 formatUTCOffset = (startDate, timezone) ->
     if timezone? and startDate?

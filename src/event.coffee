@@ -9,12 +9,15 @@ module.exports = (Event) ->
         endDate   = new time.Date @end
         startDate.setTimezone timezone, false
         endDate.setTimezone timezone, false
-        new VEvent startDate, endDate, @description, @place, @id
+        new VEvent startDate, endDate, @description, @place, @id, @details
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
         event = new Event()
-        event.description = vevent.fields["DESCRIPTION"]
-        event.description ?= vevent.fields["SUMMARY"]
+        event.description = vevent.fields["SUMMARY"] or
+                            vevent.fields["DESCRIPTION"]
+        event.details = vevent.fields["DESCRIPTION"] or
+                            vevent.fields["SUMMARY"]
+        event.description ?= event.details
         event.place = vevent.fields["LOCATION"]
         startDate = vevent.fields["DTSTART"]
         startDate = moment startDate, "YYYYMMDDTHHmm00"

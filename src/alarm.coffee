@@ -15,13 +15,18 @@ module.exports = (Alarm) ->
     Alarm::toIcal = (timezone) ->
         date = new time.Date @trigg
         date.setTimezone timezone, false
-        vtodo = new VTodo date, @id, @description
+        vtodo = new VTodo date, @id, @description, @details
         vtodo.addAlarm date
         vtodo
 
     Alarm.fromIcal = (valarm, timezone = "UTC") ->
         alarm = new Alarm()
-        alarm.description = valarm.fields["SUMMARY"]
+        alarm.id = valarm.fields["UID"] if valarm.fields["UID"]
+        alarm.description = valarm.fields["SUMMARY"] or
+                            valarm.fields["DESCRIPTION"]
+        alarm.details = valarm.fields["DESCRIPTION"] or
+                        valarm.fields["SUMMARY"]
+
         date = valarm.fields["DTSTAMP"]
         date = moment(date, "YYYYMMDDTHHmm00")
         triggerDate = new time.Date new Date(date), timezone
