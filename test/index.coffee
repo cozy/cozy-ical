@@ -170,8 +170,9 @@ describe "Calendar export/import", ->
                 new ICalParser().parseFile 'test/google.ics', (err, comp) =>
                     should.not.exist err
                     @event = Event.extractEvents(comp)[1]
-                    @event.timezone.should.equal 'Europe/Paris'
+                    # @event.timezone.should.equal 'Europe/Paris'
                     @event.description.should.equal 'Un événement'
+                    @event.start.should.equal 'Tue Jul 30 2013 10:30:00' # UTC
                     should.exist @event.details
                     done()
 

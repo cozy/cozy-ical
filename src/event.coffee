@@ -19,13 +19,24 @@ module.exports = (Event) ->
                             vevent.fields["SUMMARY"]
         event.description ?= event.details
         event.place = vevent.fields["LOCATION"]
+
         startDate = vevent.fields["DTSTART"]
-        startDate = moment startDate, "YYYYMMDDTHHmm00"
-        startDate = new time.Date new Date(startDate), timezone
+        startDate = moment startDate, "YYYYMMDDTHHmm00Z"
+        if startDate._isUTC
+            tz = vevent.fields["DTSTART-TZID"] or timezone
+            startDate = new time.Date startDate, tz
+            startDate.setTimezone 'UTC'
+
         endDate = vevent.fields["DTEND"]
-        endDate = moment endDate, "YYYYMMDDTHHmm00"
-        endDate = new time.Date new Date(endDate), timezone
-        event.timezone = timezone
+        endDate = moment endDate, "YYYYMMDDTHHmm00Z"
+        if endDate._isUTC
+            endDate = new time.Date endDate, 'UTC'
+        else
+            tz = vevent.fields["DTEND-TZID"] or timezone
+            endDate = new time.Date endDate, tz
+            endDate.setTimezone 'UTC'
+
+
         event.start = startDate.toString().slice(0, 24)
         event.end = endDate.toString().slice(0, 24)
         event
@@ -33,8 +44,8 @@ module.exports = (Event) ->
     Event.extractEvents = (component, timezone) ->
         events = []
         component.walk (component) ->
-            if component.name is 'VTIMEZONE'
-                timezone = component.fields["TZID"]
+            # if component.name is 'VTIMEZONE'
+            #     timezone = component.fields["TZID"]
             if component.name is 'VEVENT'
                 events.push Event.fromIcal component, timezone
 
