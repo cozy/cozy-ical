@@ -1,6 +1,18 @@
 time = require 'time'
 moment = require 'moment'
 
+
+icalDateToUTC = (date, tzid) ->
+    isUTC = date[date.length-1] is 'Z'
+    mdate = moment date, "YYYYMMDDTHHmm00"
+    if isUTC
+        tdate = new time.Date mdate, 'UTC'
+    else
+        tdate = new time.Date mdate, tzid
+        tdate.setTimezone 'UTC'
+
+    return tdate
+
 module.exports = (Event) ->
     {VCalendar, VEvent} = require './index'
 
@@ -9,7 +21,9 @@ module.exports = (Event) ->
         endDate   = new time.Date @end
         startDate.setTimezone timezone, false
         endDate.setTimezone timezone, false
-        new VEvent startDate, endDate, @description, @place, @id, @details
+        event = new VEvent startDate, endDate, @description, @place, @id, @details
+        event.fields['RRULE'] = @rrule if @rrule
+        return event
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
         event = new Event()
@@ -17,24 +31,16 @@ module.exports = (Event) ->
                             vevent.fields["DESCRIPTION"]
         event.details = vevent.fields["DESCRIPTION"] or
                             vevent.fields["SUMMARY"]
-        event.description ?= event.details
+
         event.place = vevent.fields["LOCATION"]
+        event.rrule = vevent.fields["RRULE"]
 
-        startDate = vevent.fields["DTSTART"]
-        startDate = moment startDate, "YYYYMMDDTHHmm00Z"
-        if startDate._isUTC
-            tz = vevent.fields["DTSTART-TZID"] or timezone
-            startDate = new time.Date startDate, tz
-            startDate.setTimezone 'UTC'
 
-        endDate = vevent.fields["DTEND"]
-        endDate = moment endDate, "YYYYMMDDTHHmm00Z"
-        if endDate._isUTC
-            endDate = new time.Date endDate, 'UTC'
-        else
-            tz = vevent.fields["DTEND-TZID"] or timezone
-            endDate = new time.Date endDate, tz
-            endDate.setTimezone 'UTC'
+        startDate = icalDateToUTC vevent.fields["DTSTART"],
+            vevent.fields["DTSTART-TZID"] or timezone
+
+        endDate = icalDateToUTC vevent.fields["DTEND"],
+            vevent.fields["DTEND-TZID"] or timezone
 
 
         event.start = startDate.toString().slice(0, 24)
