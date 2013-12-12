@@ -265,8 +265,11 @@ module.exports.ICalParser = class ICalParser
                 else if not (component? or result?)
                     sendError "Malformed ical file"
                 else if key? and key isnt '' and component?
-                    key = key.split(';')[0]
+                    [key, details...] = key.split(';')
                     component.fields[key] = value
+                    for detail in details
+                        [pname, pvalue] = detail.split '='
+                        component.fields["#{key}-#{pname}"] = pvalue
                 else
                     sendError "Malformed ical file"
 

@@ -99,8 +99,12 @@ describe "Calendar export/import", ->
                 parser = new ICalParser
                 parser.parseFile 'test/google.ics', (err, result) ->
                     should.not.exist err
-                    desc = result.subComponents[1].fields['DESCRIPTION']
+
+                    event = result.subComponents[1]
+                    desc = event.fields['DESCRIPTION']
                     desc.indexOf('tellement complet qu').should.not.equal -1
+                    should.exist event.fields['RRULE']
+
                     #result.toString().should.equal expectedContent
                     done()
 
@@ -169,10 +173,16 @@ describe "Calendar export/import", ->
 
                 new ICalParser().parseFile 'test/google.ics', (err, comp) =>
                     should.not.exist err
-                    @event = Event.extractEvents(comp)[1]
-                    @event.timezone.should.equal 'Europe/Paris'
+                    events = Event.extractEvents(comp)
+                    @event = events[1]
+                    # @event.timezone.should.equal 'Europe/Paris'
                     @event.description.should.equal 'Un événement'
+                    @event.start.should.equal 'Tue Jul 30 2013 12:30:00' # UTC
                     should.exist @event.details
+
+                    event2 = events[0]
+                    event2.start.should.equal 'Wed Jul 31 2013 14:00:00' # UTC
+                    should.exist event2.rrule
                     done()
 
             it 'and Event::toIcal()', ->
