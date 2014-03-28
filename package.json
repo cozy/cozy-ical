@@ -1,7 +1,7 @@
 {
   "name": "cozy-ical",
   "version": "0.0.9",
-  "description": "Cozy-Ical provides ICal Parser and Objects",
+  "description": "Cozy-Ical provides ICal Parser, Writer and Helperss",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script --colors",
@@ -14,6 +14,9 @@
   },
   "keywords": [
     "ical",
+    "parser",
+    "reader",
+    "generator",
     "calendar"
   ],
   "author": "Cozy",
