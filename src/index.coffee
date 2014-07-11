@@ -48,8 +48,11 @@ module.exports.VComponent = class VComponent
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
 
-    formatIcalDate: (date) ->
-        moment(date).format('YYYYMMDDTHHmm00')
+    formatIcalDate: (date, wholeDay) ->
+        if wholeDay
+          moment(date).format('YYYYMMDD')
+        else
+          moment(date).format('YYYYMMDDTHHmm00')
 
     add: (component) ->
         @subComponents.push component
@@ -105,16 +108,21 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description) ->
+    constructor: (startDate, endDate, summary, location, uid, description, wholeDay) ->
         super
         @fields =
             SUMMARY:     summary
-            "DTSTART;VALUE=DATE-TIME": @formatIcalDate(startDate) + 'Z'
-            "DTEND;VALUE=DATE-TIME":   @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
             UID:         uid
 
         @fields.DESCRIPTION = description if description?
+
+        if wholeDay
+           @fields["DTSTART;VALUE=DATE"] = @formatIcalDate(startDate, wholeDay)
+           @fields["DTEND;VALUE=DATE"] = @formatIcalDate(endDate, wholeDay)
+        else
+           @fields["DTSTART;VALUE=DATE-TIME"] = @formatIcalDate(startDate) + 'Z'
+           @fields["DTEND;VALUE=DATE-TIME"] = @formatIcalDate(endDate) + 'Z'
 
 formatUTCOffset = (startDate, timezone) ->
     if timezone? and startDate?
