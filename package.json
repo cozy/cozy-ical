@@ -1,7 +1,7 @@
 {
   "name": "cozy-ical",
   "version": "0.1.0",
-  "description": "Cozy-Ical provides ICal Parser, Writer and Helperss",
+  "description": "Cozy-Ical provides ICal Parser, generators and helpers",
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script --colors",
@@ -19,8 +19,18 @@
     "generator",
     "calendar"
   ],
-  "author": "Cozy",
-  "license": "see LICENSE",
+  "author": "Cozy Cloud <contact@cozycloud.cc> (http://cozycloud.cc)",
+  "contributors": [
+    "Romain Foucault",
+    "Oleg Elifantiev",
+    "Frank Rousseau"
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/mycozycloud/cozy-ical/blob/master/LICENSE"
+    }
+  ],
   "readmeFilename": "README.md",
   "dependencies": {
     "moment": "2.1.0",
