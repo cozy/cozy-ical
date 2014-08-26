@@ -11,9 +11,32 @@ module.exports.decorateEvent = require './event'
 # This module is inpired by the icalendar Python module.
 
 
+formatUTCOffset = (startDate, timezone) ->
+    if timezone? and startDate?
+        startDate.setTimezone timezone
+        diff = startDate.getTimezoneOffset() / 6
+        if diff is 0
+            diff = "+0000"
+        else
+            if diff < 0
+                diff = diff.toString()
+                diff = diff.concat '0'
+                if diff.length is 4
+                    diff = '-0' + diff.substring(1, 4)
+            else
+                diff = diff.toString()
+                diff = diff.concat '0'
+                if diff.length is 3
+                    diff = '+0' + diff.substring(0, 3)
+                else
+                    diff = '+' + diff.substring(0, 4)
+        diff
+    else
+        null
+
 # Buffer manager to easily build long string.
 class iCalBuffer
-    # Make this buffer streamablE
+    # TODO Make this buffer streamable
 
     txt: ''
 
@@ -59,7 +82,6 @@ module.exports.VComponent = class VComponent
         sub.walk walker for sub in @subComponents
 
 
-
 # Calendar component. It's the representation of the root object of a Calendar.
 module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
@@ -101,6 +123,7 @@ module.exports.VTodo = class VTodo extends VComponent
     addAlarm: (date) ->
         @add new VAlarm date
 
+
 # Additional components not supported yet by Cozy Cloud.
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
@@ -116,26 +139,6 @@ module.exports.VEvent = class VEvent extends VComponent
 
         @fields.DESCRIPTION = description if description?
 
-formatUTCOffset = (startDate, timezone) ->
-    if timezone? and startDate?
-        startDate.setTimezone timezone
-        diff = startDate.getTimezoneOffset()/6
-        if diff is 0
-                diff = "+0000"
-        else
-            if diff < 0
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 4
-                    diff = '-0' + diff.substring(1,4)
-            else
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 3
-                    diff = '+0' + diff.substring(0,3)
-                else
-                    diff = '+' + diff.substring(0,4)
-        diff
 
 module.exports.VTimezone = class VTimezone extends VComponent
     name: 'VTIMEZONE'
@@ -156,8 +159,11 @@ module.exports.VTimezone = class VTimezone extends VComponent
 
 module.exports.VJournal = class VJournal extends VComponent
     name: 'VJOURNAL'
+
+
 module.exports.VFreeBusy = class VFreeBusy extends VComponent
     name: 'VFREEBUSY'
+
 
 module.exports.VStandard = class VStandard extends VComponent
     name: 'STANDARD'
@@ -169,6 +175,7 @@ module.exports.VStandard = class VStandard extends VComponent
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
+
 module.exports.VDaylight = class VDaylight extends VComponent
     name: 'DAYLIGHT'
 
@@ -178,6 +185,7 @@ module.exports.VDaylight = class VDaylight extends VComponent
             DTSTART: @formatIcalDate startDate
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
+
 
 module.exports.ICalParser = class ICalParser
 
@@ -226,7 +234,6 @@ module.exports.ICalParser = class ICalParser
         sendError = (msg) ->
             callback new Error "#{msg} (line #{lineNumber})" if noerror
             noerror = false
-            # TODO find a way to stop the stream
 
         createComponent = (name) ->
             parent = component
@@ -249,7 +256,7 @@ module.exports.ICalParser = class ICalParser
         lineParser = (line) ->
             lineNumber++
 
-            tuple = line.trim().split(':')
+            tuple = line.trim().split ':'
 
             if tuple.length < 2
                 sendError "Malformed ical file"
@@ -274,7 +281,7 @@ module.exports.ICalParser = class ICalParser
                     sendError "Malformed ical file"
 
         lazy(stream).lines.forEach (line) ->
-            line = line.toString('utf-8').replace("\r", '')
+            line = line.toString('utf-8').replace "\r", ''
             if line[0] is ' '
                 completeLine += line.substring 1
             else

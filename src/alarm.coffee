@@ -4,8 +4,8 @@ moment = require 'moment'
 module.exports = (Alarm) ->
     {VCalendar, VTodo, VAlarm, VTimezone} = require './index'
 
-    Alarm.getICalCalendar = ->
-        calendar = new VCalendar 'Cozy Cloud', 'Cozy Agenda'
+    Alarm.getICalCalendar = (name='Cozy Agenda') ->
+        calendar = new VCalendar 'Cozy Cloud', name
 
     Alarm::timezoneToIcal = () ->
         date = new time.Date @trigg

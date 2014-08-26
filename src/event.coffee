@@ -3,15 +3,15 @@ moment = require 'moment'
 
 
 icalDateToUTC = (date, tzid) ->
-    isUTC = date[date.length-1] is 'Z'
+    isUTC = date[date.length - 1] is 'Z'
     mdate = moment date, "YYYYMMDDTHHmm00"
     if isUTC
         tdate = new time.Date mdate, 'UTC'
     else
         tdate = new time.Date mdate, tzid
         tdate.setTimezone 'UTC'
-
     return tdate
+
 
 module.exports = (Event) ->
     {VCalendar, VEvent} = require './index'
@@ -21,7 +21,8 @@ module.exports = (Event) ->
         endDate   = new time.Date @end
         startDate.setTimezone timezone, false
         endDate.setTimezone timezone, false
-        event = new VEvent startDate, endDate, @description, @place, @id, @details
+        event = new VEvent(
+            startDate, endDate, @description, @place, @id, @details)
         event.fields['RRULE'] = @rrule if @rrule
         return event
 
@@ -35,23 +36,19 @@ module.exports = (Event) ->
         event.place = vevent.fields["LOCATION"]
         event.rrule = vevent.fields["RRULE"]
 
-
         startDate = icalDateToUTC vevent.fields["DTSTART"],
             vevent.fields["DTSTART-TZID"] or timezone
 
         endDate = icalDateToUTC vevent.fields["DTEND"],
             vevent.fields["DTEND-TZID"] or timezone
 
-
-        event.start = startDate.toString().slice(0, 24)
-        event.end = endDate.toString().slice(0, 24)
+        event.start = startDate.toString().slice 0, 24
+        event.end = endDate.toString().slice 0, 24
         event
 
     Event.extractEvents = (component, timezone) ->
         events = []
         component.walk (component) ->
-            # if component.name is 'VTIMEZONE'
-            #     timezone = component.fields["TZID"]
             if component.name is 'VEVENT'
                 events.push Event.fromIcal component, timezone
 
