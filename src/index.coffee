@@ -22,17 +22,18 @@ formatUTCOffset = (startDate, timezone) ->
                 diff = diff.toString()
                 diff = diff.concat '0'
                 if diff.length is 4
-                    diff = '-0' + diff.substring(1, 4)
+                    diff = "-0#{diff.substring 1, 4}"
             else
                 diff = diff.toString()
                 diff = diff.concat '0'
                 if diff.length is 3
-                    diff = '+0' + diff.substring(0, 3)
+                    diff = "+0#{diff.substring 0, 3}"
                 else
-                    diff = '+' + diff.substring(0, 4)
+                    diff = "+#{diff.substring(0, 4)}"
         diff
     else
         null
+
 
 # Buffer manager to easily build long string.
 class iCalBuffer
@@ -71,8 +72,11 @@ module.exports.VComponent = class VComponent
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
 
-    formatIcalDate: (date) ->
-        moment(date).format('YYYYMMDDTHHmm00')
+    formatIcalDate: (date, wholeDay) ->
+        if wholeDay
+          moment(date).format('YYYYMMDD')
+        else
+          moment(date).format('YYYYMMDDTHHmm00')
 
     add: (component) ->
         @subComponents.push component
@@ -128,16 +132,21 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description) ->
+    constructor: (startDate, endDate, summary, location, uid, description, wholeDay) ->
         super
         @fields =
             SUMMARY:     summary
-            "DTSTART;VALUE=DATE-TIME": @formatIcalDate(startDate) + 'Z'
-            "DTEND;VALUE=DATE-TIME":   @formatIcalDate(endDate) + 'Z'
             LOCATION:    location
             UID:         uid
 
         @fields.DESCRIPTION = description if description?
+
+        if wholeDay
+           @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
+           @fields["DTEND;VALUE=DATE"] = @formatIcalDate endDate, wholeDay
+        else
+           @fields["DTSTART;VALUE=DATE-TIME"] = "#{@formatIcalDate startDate}Z"
+           @fields["DTEND;VALUE=DATE-TIME"] = "#{@formatIcalDate endDate}Z"
 
 
 module.exports.VTimezone = class VTimezone extends VComponent
