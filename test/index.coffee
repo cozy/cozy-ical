@@ -47,10 +47,10 @@ describe "Calendar export/import", ->
                 vevent.toString().should.equal """
                     BEGIN:VEVENT
                     SUMMARY:desc
-                    DTSTART;VALUE=DATE-TIME:20130609T150000Z
-                    DTEND;VALUE=DATE-TIME:20130610T150000Z
                     LOCATION:loc
                     UID:3615
+                    DTSTART;VALUE=DATE-TIME:20130609T150000Z
+                    DTEND;VALUE=DATE-TIME:20130610T150000Z
                     END:VEVENT""".replace(/\n/g, '\r\n')
 
 
