@@ -1,5 +1,6 @@
 time = require 'time'
 moment = require 'moment'
+timezones = require './timezones'
 
 module.exports = (Alarm) ->
     {VCalendar, VTodo, VAlarm, VTimezone} = require './index'
@@ -35,12 +36,12 @@ module.exports = (Alarm) ->
         alarm
 
     Alarm.extractAlarms = (component, timezone) ->
-        timezones = require './timezones'
+        timezone = 'UTC' unless timezones[timezone]
         alarms = []
         component.walk (component) ->
             if component.name is 'VTIMEZONE' \
             and component.fields["TZID"]? \
-            and component.fields["TZID"] in timezones
+            and timezones[component.fields["TZID"]]
                 timezone = component.fields["TZID"]
             else if component.name is 'VTODO'
                 alarms.push Alarm.fromIcal component, timezone

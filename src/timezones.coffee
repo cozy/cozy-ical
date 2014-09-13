@@ -1,540 +1,540 @@
-module.exports = [
-    "Africa/Accra"
-    "Africa/Addis_Ababa"
-    "Africa/Algiers"
-    "Africa/Asmara"
-    "Africa/Asmera"
-    "Africa/Bamako"
-    "Africa/Bangui"
-    "Africa/Banjul"
-    "Africa/Bissau"
-    "Africa/Blantyre"
-    "Africa/Brazzaville"
-    "Africa/Bujumbura"
-    "Africa/Cairo"
-    "Africa/Casablanca"
-    "Africa/Ceuta"
-    "Africa/Conakry"
-    "Africa/Dakar"
-    "Africa/Dar_es_Salaam"
-    "Africa/Djibouti"
-    "Africa/Douala"
-    "Africa/El_Aaiun"
-    "Africa/Freetown"
-    "Africa/Gaborone"
-    "Africa/Harare"
-    "Africa/Johannesburg"
-    "Africa/Juba"
-    "Africa/Kampala"
-    "Africa/Khartoum"
-    "Africa/Kigali"
-    "Africa/Kinshasa"
-    "Africa/Lagos"
-    "Africa/Libreville"
-    "Africa/Lome"
-    "Africa/Luanda"
-    "Africa/Lubumbashi"
-    "Africa/Lusaka"
-    "Africa/Malabo"
-    "Africa/Maputo"
-    "Africa/Maseru"
-    "Africa/Mbabane"
-    "Africa/Mogadishu"
-    "Africa/Monrovia"
-    "Africa/Nairobi"
-    "Africa/Ndjamena"
-    "Africa/Niamey"
-    "Africa/Nouakchott"
-    "Africa/Ouagadougou"
-    "Africa/Porto-Novo"
-    "Africa/Sao_Tome"
-    "Africa/Timbuktu"
-    "Africa/Tripoli"
-    "Africa/Tunis"
-    "Africa/Windhoek"
-    "America/Adak"
-    "America/Anchorage"
-    "America/Anguilla"
-    "America/Antigua"
-    "America/Araguaina"
-    "America/Argentina/Buenos_Aires"
-    "America/Argentina/Catamarca"
-    "America/Argentina/ComodRivadavia"
-    "America/Argentina/Cordoba"
-    "America/Argentina/Jujuy"
-    "America/Argentina/La_Rioja"
-    "America/Argentina/Mendoza"
-    "America/Argentina/Rio_Gallegos"
-    "America/Argentina/Salta"
-    "America/Argentina/San_Juan"
-    "America/Argentina/San_Luis"
-    "America/Argentina/Tucuman"
-    "America/Argentina/Ushuaia"
-    "America/Aruba"
-    "America/Asuncion"
-    "America/Atikokan"
-    "America/Atka"
-    "America/Bahia"
-    "America/Bahia_Banderas"
-    "America/Barbados"
-    "America/Belem"
-    "America/Belize"
-    "America/Blanc-Sablon"
-    "America/Boa_Vista"
-    "America/Bogota"
-    "America/Boise"
-    "America/Buenos_Aires"
-    "America/Cambridge_Bay"
-    "America/Campo_Grande"
-    "America/Cancun"
-    "America/Caracas"
-    "America/Catamarca"
-    "America/Cayenne"
-    "America/Cayman"
-    "America/Chicago"
-    "America/Chihuahua"
-    "America/Coral_Harbour"
-    "America/Cordoba"
-    "America/Costa_Rica"
-    "America/Creston"
-    "America/Cuiaba"
-    "America/Curacao"
-    "America/Danmarkshavn"
-    "America/Dawson"
-    "America/Dawson_Creek"
-    "America/Denver"
-    "America/Detroit"
-    "America/Dominica"
-    "America/Edmonton"
-    "America/Eirunepe"
-    "America/El_Salvador"
-    "America/Ensenada"
-    "America/Fort_Wayne"
-    "America/Fortaleza"
-    "America/Glace_Bay"
-    "America/Godthab"
-    "America/Goose_Bay"
-    "America/Grand_Turk"
-    "America/Grenada"
-    "America/Guadeloupe"
-    "America/Guatemala"
-    "America/Guayaquil"
-    "America/Guyana"
-    "America/Halifax"
-    "America/Havana"
-    "America/Hermosillo"
-    "America/Indiana/Indianapolis"
-    "America/Indiana/Knox"
-    "America/Indiana/Marengo"
-    "America/Indiana/Petersburg"
-    "America/Indiana/Tell_City"
-    "America/Indiana/Valparaiso"
-    "America/Indiana/Vevay"
-    "America/Indiana/Vincennes"
-    "America/Indiana/Winamac"
-    "America/Indianapolis"
-    "America/Inuvik"
-    "America/Iqaluit"
-    "America/Jamaica"
-    "America/Jujuy"
-    "America/Juneau"
-    "America/Kentucky/Louisville"
-    "America/Kentucky/Monticello"
-    "America/Knox_IN"
-    "America/Kralendijk"
-    "America/La_Paz"
-    "America/Lima"
-    "America/Los_Angeles"
-    "America/Louisville"
-    "America/Lower_Princes"
-    "America/Maceio"
-    "America/Managua"
-    "America/Manaus"
-    "America/Marigot"
-    "America/Martinique"
-    "America/Matamoros"
-    "America/Mazatlan"
-    "America/Mendoza"
-    "America/Menominee"
-    "America/Merida"
-    "America/Metlakatla"
-    "America/Mexico_City"
-    "America/Miquelon"
-    "America/Moncton"
-    "America/Monterrey"
-    "America/Montevideo"
-    "America/Montreal"
-    "America/Montserrat"
-    "America/Nassau"
-    "America/New_York"
-    "America/Nipigon"
-    "America/Nome"
-    "America/Noronha"
-    "America/North_Dakota/Beulah"
-    "America/North_Dakota/Center"
-    "America/North_Dakota/New_Salem"
-    "America/Ojinaga"
-    "America/Panama"
-    "America/Pangnirtung"
-    "America/Paramaribo"
-    "America/Phoenix"
-    "America/Port_of_Spain"
-    "America/Port-au-Prince"
-    "America/Porto_Acre"
-    "America/Porto_Velho"
-    "America/Puerto_Rico"
-    "America/Rainy_River"
-    "America/Rankin_Inlet"
-    "America/Recife"
-    "America/Regina"
-    "America/Resolute"
-    "America/Rio_Branco"
-    "America/Rosario"
-    "America/Santa_Isabel"
-    "America/Santarem"
-    "America/Santiago"
-    "America/Santo_Domingo"
-    "America/Sao_Paulo"
-    "America/Scoresbysund"
-    "America/Shiprock"
-    "America/Sitka"
-    "America/St_Barthelemy"
-    "America/St_Johns"
-    "America/St_Kitts"
-    "America/St_Lucia"
-    "America/St_Thomas"
-    "America/St_Vincent"
-    "America/Swift_Current"
-    "America/Tegucigalpa"
-    "America/Thule"
-    "America/Thunder_Bay"
-    "America/Tijuana"
-    "America/Toronto"
-    "America/Tortola"
-    "America/Vancouver"
-    "America/Virgin"
-    "America/Whitehorse"
-    "America/Winnipeg"
-    "America/Yakutat"
-    "America/Yellowknife"
-    "Antarctica/Casey"
-    "Antarctica/Davis"
-    "Antarctica/DumontDUrville"
-    "Antarctica/Macquarie"
-    "Antarctica/Mawson"
-    "Antarctica/McMurdo"
-    "Antarctica/Palmer"
-    "Antarctica/Rothera"
-    "Antarctica/South_Pole"
-    "Antarctica/Syowa"
-    "Antarctica/Troll"
-    "Antarctica/Vostok"
-    "Arctic/Longyearbyen"
-    "Asia/Aden"
-    "Asia/Almaty"
-    "Asia/Amman"
-    "Asia/Anadyr"
-    "Asia/Aqtau"
-    "Asia/Aqtobe"
-    "Asia/Ashgabat"
-    "Asia/Ashkhabad"
-    "Asia/Baghdad"
-    "Asia/Bahrain"
-    "Asia/Baku"
-    "Asia/Bangkok"
-    "Asia/Beirut"
-    "Asia/Bishkek"
-    "Asia/Brunei"
-    "Asia/Calcutta"
-    "Asia/Choibalsan"
-    "Asia/Chongqing"
-    "Asia/Chungking"
-    "Asia/Colombo"
-    "Asia/Dacca"
-    "Asia/Damascus"
-    "Asia/Dhaka"
-    "Asia/Dili"
-    "Asia/Dubai"
-    "Asia/Dushanbe"
-    "Asia/Gaza"
-    "Asia/Harbin"
-    "Asia/Hebron"
-    "Asia/Ho_Chi_Minh"
-    "Asia/Hong_Kong"
-    "Asia/Hovd"
-    "Asia/Irkutsk"
-    "Asia/Istanbul"
-    "Asia/Jakarta"
-    "Asia/Jayapura"
-    "Asia/Jerusalem"
-    "Asia/Kabul"
-    "Asia/Kamchatka"
-    "Asia/Karachi"
-    "Asia/Kashgar"
-    "Asia/Kathmandu"
-    "Asia/Katmandu"
-    "Asia/Khandyga"
-    "Asia/Kolkata"
-    "Asia/Krasnoyarsk"
-    "Asia/Kuala_Lumpur"
-    "Asia/Kuching"
-    "Asia/Kuwait"
-    "Asia/Macao"
-    "Asia/Macau"
-    "Asia/Magadan"
-    "Asia/Makassar"
-    "Asia/Manila"
-    "Asia/Muscat"
-    "Asia/Nicosia"
-    "Asia/Novokuznetsk"
-    "Asia/Novosibirsk"
-    "Asia/Omsk"
-    "Asia/Oral"
-    "Asia/Phnom_Penh"
-    "Asia/Pontianak"
-    "Asia/Pyongyang"
-    "Asia/Qatar"
-    "Asia/Qyzylorda"
-    "Asia/Rangoon"
-    "Asia/Riyadh"
-    "Asia/Saigon"
-    "Asia/Sakhalin"
-    "Asia/Samarkand"
-    "Asia/Seoul"
-    "Asia/Shanghai"
-    "Asia/Singapore"
-    "Asia/Taipei"
-    "Asia/Tashkent"
-    "Asia/Tbilisi"
-    "Asia/Tehran"
-    "Asia/Tel_Aviv"
-    "Asia/Thimbu"
-    "Asia/Thimphu"
-    "Asia/Tokyo"
-    "Asia/Ujung_Pandang"
-    "Asia/Ulaanbaatar"
-    "Asia/Ulan_Bator"
-    "Asia/Urumqi"
-    "Asia/Ust-Nera"
-    "Asia/Vientiane"
-    "Asia/Vladivostok"
-    "Asia/Yakutsk"
-    "Asia/Yekaterinburg"
-    "Asia/Yerevan"
-    "Atlantic/Azores"
-    "Atlantic/Bermuda"
-    "Atlantic/Canary"
-    "Atlantic/Cape_Verde"
-    "Atlantic/Faeroe"
-    "Atlantic/Faroe"
-    "Atlantic/Jan_Mayen"
-    "Atlantic/Madeira"
-    "Atlantic/Reykjavik"
-    "Atlantic/South_Georgia"
-    "Atlantic/St_Helena"
-    "Atlantic/Stanley"
-    "Australia/ACT"
-    "Australia/Adelaide"
-    "Australia/Brisbane"
-    "Australia/Broken_Hill"
-    "Australia/Canberra"
-    "Australia/Currie"
-    "Australia/Darwin"
-    "Australia/Eucla"
-    "Australia/Hobart"
-    "Australia/LHI"
-    "Australia/Lindeman"
-    "Australia/Lord_Howe"
-    "Australia/Melbourne"
-    "Australia/North"
-    "Australia/NSW"
-    "Australia/Perth"
-    "Australia/Queensland"
-    "Australia/South"
-    "Australia/Sydney"
-    "Australia/Tasmania"
-    "Australia/Victoria"
-    "Australia/West"
-    "Australia/Yancowinna"
-    "Brazil/Acre"
-    "Brazil/DeNoronha"
-    "Brazil/East"
-    "Brazil/West"
-    "Canada/Atlantic"
-    "Canada/Central"
-    "Canada/Eastern"
-    "Canada/East-Saskatchewan"
-    "Canada/Mountain"
-    "Canada/Newfoundland"
-    "Canada/Pacific"
-    "Canada/Saskatchewan"
-    "Canada/Yukon"
-    "Chile/Continental"
-    "Chile/EasterIsland"
-    "Cuba"
-    "Egypt"
-    "Eire"
-    "Etc/GMT"
-    "Etc/GMT+0"
-    "Etc/UCT"
-    "Etc/Universal"
-    "Etc/UTC"
-    "Etc/Zulu"
-    "Europe/Amsterdam"
-    "Europe/Andorra"
-    "Europe/Athens"
-    "Europe/Belfast"
-    "Europe/Belgrade"
-    "Europe/Berlin"
-    "Europe/Bratislava"
-    "Europe/Brussels"
-    "Europe/Bucharest"
-    "Europe/Budapest"
-    "Europe/Busingen"
-    "Europe/Chisinau"
-    "Europe/Copenhagen"
-    "Europe/Dublin"
-    "Europe/Gibraltar"
-    "Europe/Guernsey"
-    "Europe/Helsinki"
-    "Europe/Isle_of_Man"
-    "Europe/Istanbul"
-    "Europe/Jersey"
-    "Europe/Kaliningrad"
-    "Europe/Kiev"
-    "Europe/Lisbon"
-    "Europe/Ljubljana"
-    "Europe/London"
-    "Europe/Luxembourg"
-    "Europe/Madrid"
-    "Europe/Malta"
-    "Europe/Mariehamn"
-    "Europe/Minsk"
-    "Europe/Monaco"
-    "Europe/Moscow"
-    "Europe/Nicosia"
-    "Europe/Oslo"
-    "Europe/Paris"
-    "Europe/Podgorica"
-    "Europe/Prague"
-    "Europe/Riga"
-    "Europe/Rome"
-    "Europe/Samara"
-    "Europe/San_Marino"
-    "Europe/Sarajevo"
-    "Europe/Simferopol"
-    "Europe/Skopje"
-    "Europe/Sofia"
-    "Europe/Stockholm"
-    "Europe/Tallinn"
-    "Europe/Tirane"
-    "Europe/Tiraspol"
-    "Europe/Uzhgorod"
-    "Europe/Vaduz"
-    "Europe/Vatican"
-    "Europe/Vienna"
-    "Europe/Vilnius"
-    "Europe/Volgograd"
-    "Europe/Warsaw"
-    "Europe/Zagreb"
-    "Europe/Zaporozhye"
-    "Europe/Zurich"
-    "GB"
-    "GB-Eire"
-    "GMT"
-    "GMT+0"
-    "GMT0"
-    "GMT-0"
-    "Greenwich"
-    "Hongkong"
-    "Iceland"
-    "Indian/Antananarivo"
-    "Indian/Chagos"
-    "Indian/Christmas"
-    "Indian/Cocos"
-    "Indian/Comoro"
-    "Indian/Kerguelen"
-    "Indian/Mahe"
-    "Indian/Maldives"
-    "Indian/Mauritius"
-    "Indian/Mayotte"
-    "Indian/Reunion"
-    "Iran"
-    "Israel"
-    "Jamaica"
-    "Japan"
-    "Kwajalein"
-    "Libya"
-    "Mexico/BajaNorte"
-    "Mexico/BajaSur"
-    "Mexico/General"
-    "Navajo"
-    "NZ"
-    "NZ-CHAT"
-    "Pacific/Apia"
-    "Pacific/Auckland"
-    "Pacific/Chatham"
-    "Pacific/Chuuk"
-    "Pacific/Easter"
-    "Pacific/Efate"
-    "Pacific/Enderbury"
-    "Pacific/Fakaofo"
-    "Pacific/Fiji"
-    "Pacific/Funafuti"
-    "Pacific/Galapagos"
-    "Pacific/Gambier"
-    "Pacific/Guadalcanal"
-    "Pacific/Guam"
-    "Pacific/Honolulu"
-    "Pacific/Johnston"
-    "Pacific/Kiritimati"
-    "Pacific/Kosrae"
-    "Pacific/Kwajalein"
-    "Pacific/Majuro"
-    "Pacific/Marquesas"
-    "Pacific/Midway"
-    "Pacific/Nauru"
-    "Pacific/Niue"
-    "Pacific/Norfolk"
-    "Pacific/Noumea"
-    "Pacific/Pago_Pago"
-    "Pacific/Palau"
-    "Pacific/Pitcairn"
-    "Pacific/Pohnpei"
-    "Pacific/Ponape"
-    "Pacific/Port_Moresby"
-    "Pacific/Rarotonga"
-    "Pacific/Saipan"
-    "Pacific/Samoa"
-    "Pacific/Tahiti"
-    "Pacific/Tarawa"
-    "Pacific/Tongatapu"
-    "Pacific/Truk"
-    "Pacific/Wake"
-    "Pacific/Wallis"
-    "Pacific/Yap"
-    "Poland"
-    "Portugal"
-    "PRC"
-    "ROC"
-    "ROK"
-    "Singapore"
-    "Turkey"
-    "UCT"
-    "Universal"
-    "US/Alaska"
-    "US/Aleutian"
-    "US/Arizona"
-    "US/Central"
-    "US/Eastern"
-    "US/East-Indiana"
-    "US/Hawaii"
-    "US/Indiana-Starke"
-    "US/Michigan"
-    "US/Mountain"
-    "US/Pacific"
-    "US/Samoa"
-    "UTC"
-    "W-SU"
-    "Zulu"
-]
+module.exports = {
+    "Africa/Accra": true
+    "Africa/Addis_Ababa": true
+    "Africa/Algiers": true
+    "Africa/Asmara": true
+    "Africa/Asmera": true
+    "Africa/Bamako": true
+    "Africa/Bangui": true
+    "Africa/Banjul": true
+    "Africa/Bissau": true
+    "Africa/Blantyre": true
+    "Africa/Brazzaville": true
+    "Africa/Bujumbura": true
+    "Africa/Cairo": true
+    "Africa/Casablanca": true
+    "Africa/Ceuta": true
+    "Africa/Conakry": true
+    "Africa/Dakar": true
+    "Africa/Dar_es_Salaam": true
+    "Africa/Djibouti": true
+    "Africa/Douala": true
+    "Africa/El_Aaiun": true
+    "Africa/Freetown": true
+    "Africa/Gaborone": true
+    "Africa/Harare": true
+    "Africa/Johannesburg": true
+    "Africa/Juba": true
+    "Africa/Kampala": true
+    "Africa/Khartoum": true
+    "Africa/Kigali": true
+    "Africa/Kinshasa": true
+    "Africa/Lagos": true
+    "Africa/Libreville": true
+    "Africa/Lome": true
+    "Africa/Luanda": true
+    "Africa/Lubumbashi": true
+    "Africa/Lusaka": true
+    "Africa/Malabo": true
+    "Africa/Maputo": true
+    "Africa/Maseru": true
+    "Africa/Mbabane": true
+    "Africa/Mogadishu": true
+    "Africa/Monrovia": true
+    "Africa/Nairobi": true
+    "Africa/Ndjamena": true
+    "Africa/Niamey": true
+    "Africa/Nouakchott": true
+    "Africa/Ouagadougou": true
+    "Africa/Porto-Novo": true
+    "Africa/Sao_Tome": true
+    "Africa/Timbuktu": true
+    "Africa/Tripoli": true
+    "Africa/Tunis": true
+    "Africa/Windhoek": true
+    "America/Adak": true
+    "America/Anchorage": true
+    "America/Anguilla": true
+    "America/Antigua": true
+    "America/Araguaina": true
+    "America/Argentina/Buenos_Aires": true
+    "America/Argentina/Catamarca": true
+    "America/Argentina/ComodRivadavia": true
+    "America/Argentina/Cordoba": true
+    "America/Argentina/Jujuy": true
+    "America/Argentina/La_Rioja": true
+    "America/Argentina/Mendoza": true
+    "America/Argentina/Rio_Gallegos": true
+    "America/Argentina/Salta": true
+    "America/Argentina/San_Juan": true
+    "America/Argentina/San_Luis": true
+    "America/Argentina/Tucuman": true
+    "America/Argentina/Ushuaia": true
+    "America/Aruba": true
+    "America/Asuncion": true
+    "America/Atikokan": true
+    "America/Atka": true
+    "America/Bahia": true
+    "America/Bahia_Banderas": true
+    "America/Barbados": true
+    "America/Belem": true
+    "America/Belize": true
+    "America/Blanc-Sablon": true
+    "America/Boa_Vista": true
+    "America/Bogota": true
+    "America/Boise": true
+    "America/Buenos_Aires": true
+    "America/Cambridge_Bay": true
+    "America/Campo_Grande": true
+    "America/Cancun": true
+    "America/Caracas": true
+    "America/Catamarca": true
+    "America/Cayenne": true
+    "America/Cayman": true
+    "America/Chicago": true
+    "America/Chihuahua": true
+    "America/Coral_Harbour": true
+    "America/Cordoba": true
+    "America/Costa_Rica": true
+    "America/Creston": true
+    "America/Cuiaba": true
+    "America/Curacao": true
+    "America/Danmarkshavn": true
+    "America/Dawson": true
+    "America/Dawson_Creek": true
+    "America/Denver": true
+    "America/Detroit": true
+    "America/Dominica": true
+    "America/Edmonton": true
+    "America/Eirunepe": true
+    "America/El_Salvador": true
+    "America/Ensenada": true
+    "America/Fort_Wayne": true
+    "America/Fortaleza": true
+    "America/Glace_Bay": true
+    "America/Godthab": true
+    "America/Goose_Bay": true
+    "America/Grand_Turk": true
+    "America/Grenada": true
+    "America/Guadeloupe": true
+    "America/Guatemala": true
+    "America/Guayaquil": true
+    "America/Guyana": true
+    "America/Halifax": true
+    "America/Havana": true
+    "America/Hermosillo": true
+    "America/Indiana/Indianapolis": true
+    "America/Indiana/Knox": true
+    "America/Indiana/Marengo": true
+    "America/Indiana/Petersburg": true
+    "America/Indiana/Tell_City": true
+    "America/Indiana/Valparaiso": true
+    "America/Indiana/Vevay": true
+    "America/Indiana/Vincennes": true
+    "America/Indiana/Winamac": true
+    "America/Indianapolis": true
+    "America/Inuvik": true
+    "America/Iqaluit": true
+    "America/Jamaica": true
+    "America/Jujuy": true
+    "America/Juneau": true
+    "America/Kentucky/Louisville": true
+    "America/Kentucky/Monticello": true
+    "America/Knox_IN": true
+    "America/Kralendijk": true
+    "America/La_Paz": true
+    "America/Lima": true
+    "America/Los_Angeles": true
+    "America/Louisville": true
+    "America/Lower_Princes": true
+    "America/Maceio": true
+    "America/Managua": true
+    "America/Manaus": true
+    "America/Marigot": true
+    "America/Martinique": true
+    "America/Matamoros": true
+    "America/Mazatlan": true
+    "America/Mendoza": true
+    "America/Menominee": true
+    "America/Merida": true
+    "America/Metlakatla": true
+    "America/Mexico_City": true
+    "America/Miquelon": true
+    "America/Moncton": true
+    "America/Monterrey": true
+    "America/Montevideo": true
+    "America/Montreal": true
+    "America/Montserrat": true
+    "America/Nassau": true
+    "America/New_York": true
+    "America/Nipigon": true
+    "America/Nome": true
+    "America/Noronha": true
+    "America/North_Dakota/Beulah": true
+    "America/North_Dakota/Center": true
+    "America/North_Dakota/New_Salem": true
+    "America/Ojinaga": true
+    "America/Panama": true
+    "America/Pangnirtung": true
+    "America/Paramaribo": true
+    "America/Phoenix": true
+    "America/Port_of_Spain": true
+    "America/Port-au-Prince": true
+    "America/Porto_Acre": true
+    "America/Porto_Velho": true
+    "America/Puerto_Rico": true
+    "America/Rainy_River": true
+    "America/Rankin_Inlet": true
+    "America/Recife": true
+    "America/Regina": true
+    "America/Resolute": true
+    "America/Rio_Branco": true
+    "America/Rosario": true
+    "America/Santa_Isabel": true
+    "America/Santarem": true
+    "America/Santiago": true
+    "America/Santo_Domingo": true
+    "America/Sao_Paulo": true
+    "America/Scoresbysund": true
+    "America/Shiprock": true
+    "America/Sitka": true
+    "America/St_Barthelemy": true
+    "America/St_Johns": true
+    "America/St_Kitts": true
+    "America/St_Lucia": true
+    "America/St_Thomas": true
+    "America/St_Vincent": true
+    "America/Swift_Current": true
+    "America/Tegucigalpa": true
+    "America/Thule": true
+    "America/Thunder_Bay": true
+    "America/Tijuana": true
+    "America/Toronto": true
+    "America/Tortola": true
+    "America/Vancouver": true
+    "America/Virgin": true
+    "America/Whitehorse": true
+    "America/Winnipeg": true
+    "America/Yakutat": true
+    "America/Yellowknife": true
+    "Antarctica/Casey": true
+    "Antarctica/Davis": true
+    "Antarctica/DumontDUrville": true
+    "Antarctica/Macquarie": true
+    "Antarctica/Mawson": true
+    "Antarctica/McMurdo": true
+    "Antarctica/Palmer": true
+    "Antarctica/Rothera": true
+    "Antarctica/South_Pole": true
+    "Antarctica/Syowa": true
+    "Antarctica/Troll": true
+    "Antarctica/Vostok": true
+    "Arctic/Longyearbyen": true
+    "Asia/Aden": true
+    "Asia/Almaty": true
+    "Asia/Amman": true
+    "Asia/Anadyr": true
+    "Asia/Aqtau": true
+    "Asia/Aqtobe": true
+    "Asia/Ashgabat": true
+    "Asia/Ashkhabad": true
+    "Asia/Baghdad": true
+    "Asia/Bahrain": true
+    "Asia/Baku": true
+    "Asia/Bangkok": true
+    "Asia/Beirut": true
+    "Asia/Bishkek": true
+    "Asia/Brunei": true
+    "Asia/Calcutta": true
+    "Asia/Choibalsan": true
+    "Asia/Chongqing": true
+    "Asia/Chungking": true
+    "Asia/Colombo": true
+    "Asia/Dacca": true
+    "Asia/Damascus": true
+    "Asia/Dhaka": true
+    "Asia/Dili": true
+    "Asia/Dubai": true
+    "Asia/Dushanbe": true
+    "Asia/Gaza": true
+    "Asia/Harbin": true
+    "Asia/Hebron": true
+    "Asia/Ho_Chi_Minh": true
+    "Asia/Hong_Kong": true
+    "Asia/Hovd": true
+    "Asia/Irkutsk": true
+    "Asia/Istanbul": true
+    "Asia/Jakarta": true
+    "Asia/Jayapura": true
+    "Asia/Jerusalem": true
+    "Asia/Kabul": true
+    "Asia/Kamchatka": true
+    "Asia/Karachi": true
+    "Asia/Kashgar": true
+    "Asia/Kathmandu": true
+    "Asia/Katmandu": true
+    "Asia/Khandyga": true
+    "Asia/Kolkata": true
+    "Asia/Krasnoyarsk": true
+    "Asia/Kuala_Lumpur": true
+    "Asia/Kuching": true
+    "Asia/Kuwait": true
+    "Asia/Macao": true
+    "Asia/Macau": true
+    "Asia/Magadan": true
+    "Asia/Makassar": true
+    "Asia/Manila": true
+    "Asia/Muscat": true
+    "Asia/Nicosia": true
+    "Asia/Novokuznetsk": true
+    "Asia/Novosibirsk": true
+    "Asia/Omsk": true
+    "Asia/Oral": true
+    "Asia/Phnom_Penh": true
+    "Asia/Pontianak": true
+    "Asia/Pyongyang": true
+    "Asia/Qatar": true
+    "Asia/Qyzylorda": true
+    "Asia/Rangoon": true
+    "Asia/Riyadh": true
+    "Asia/Saigon": true
+    "Asia/Sakhalin": true
+    "Asia/Samarkand": true
+    "Asia/Seoul": true
+    "Asia/Shanghai": true
+    "Asia/Singapore": true
+    "Asia/Taipei": true
+    "Asia/Tashkent": true
+    "Asia/Tbilisi": true
+    "Asia/Tehran": true
+    "Asia/Tel_Aviv": true
+    "Asia/Thimbu": true
+    "Asia/Thimphu": true
+    "Asia/Tokyo": true
+    "Asia/Ujung_Pandang": true
+    "Asia/Ulaanbaatar": true
+    "Asia/Ulan_Bator": true
+    "Asia/Urumqi": true
+    "Asia/Ust-Nera": true
+    "Asia/Vientiane": true
+    "Asia/Vladivostok": true
+    "Asia/Yakutsk": true
+    "Asia/Yekaterinburg": true
+    "Asia/Yerevan": true
+    "Atlantic/Azores": true
+    "Atlantic/Bermuda": true
+    "Atlantic/Canary": true
+    "Atlantic/Cape_Verde": true
+    "Atlantic/Faeroe": true
+    "Atlantic/Faroe": true
+    "Atlantic/Jan_Mayen": true
+    "Atlantic/Madeira": true
+    "Atlantic/Reykjavik": true
+    "Atlantic/South_Georgia": true
+    "Atlantic/St_Helena": true
+    "Atlantic/Stanley": true
+    "Australia/ACT": true
+    "Australia/Adelaide": true
+    "Australia/Brisbane": true
+    "Australia/Broken_Hill": true
+    "Australia/Canberra": true
+    "Australia/Currie": true
+    "Australia/Darwin": true
+    "Australia/Eucla": true
+    "Australia/Hobart": true
+    "Australia/LHI": true
+    "Australia/Lindeman": true
+    "Australia/Lord_Howe": true
+    "Australia/Melbourne": true
+    "Australia/North": true
+    "Australia/NSW": true
+    "Australia/Perth": true
+    "Australia/Queensland": true
+    "Australia/South": true
+    "Australia/Sydney": true
+    "Australia/Tasmania": true
+    "Australia/Victoria": true
+    "Australia/West": true
+    "Australia/Yancowinna": true
+    "Brazil/Acre": true
+    "Brazil/DeNoronha": true
+    "Brazil/East": true
+    "Brazil/West": true
+    "Canada/Atlantic": true
+    "Canada/Central": true
+    "Canada/Eastern": true
+    "Canada/East-Saskatchewan": true
+    "Canada/Mountain": true
+    "Canada/Newfoundland": true
+    "Canada/Pacific": true
+    "Canada/Saskatchewan": true
+    "Canada/Yukon": true
+    "Chile/Continental": true
+    "Chile/EasterIsland": true
+    "Cuba": true
+    "Egypt": true
+    "Eire": true
+    "Etc/GMT": true
+    "Etc/GMT+0": true
+    "Etc/UCT": true
+    "Etc/Universal": true
+    "Etc/UTC": true
+    "Etc/Zulu": true
+    "Europe/Amsterdam": true
+    "Europe/Andorra": true
+    "Europe/Athens": true
+    "Europe/Belfast": true
+    "Europe/Belgrade": true
+    "Europe/Berlin": true
+    "Europe/Bratislava": true
+    "Europe/Brussels": true
+    "Europe/Bucharest": true
+    "Europe/Budapest": true
+    "Europe/Busingen": true
+    "Europe/Chisinau": true
+    "Europe/Copenhagen": true
+    "Europe/Dublin": true
+    "Europe/Gibraltar": true
+    "Europe/Guernsey": true
+    "Europe/Helsinki": true
+    "Europe/Isle_of_Man": true
+    "Europe/Istanbul": true
+    "Europe/Jersey": true
+    "Europe/Kaliningrad": true
+    "Europe/Kiev": true
+    "Europe/Lisbon": true
+    "Europe/Ljubljana": true
+    "Europe/London": true
+    "Europe/Luxembourg": true
+    "Europe/Madrid": true
+    "Europe/Malta": true
+    "Europe/Mariehamn": true
+    "Europe/Minsk": true
+    "Europe/Monaco": true
+    "Europe/Moscow": true
+    "Europe/Nicosia": true
+    "Europe/Oslo": true
+    "Europe/Paris": true
+    "Europe/Podgorica": true
+    "Europe/Prague": true
+    "Europe/Riga": true
+    "Europe/Rome": true
+    "Europe/Samara": true
+    "Europe/San_Marino": true
+    "Europe/Sarajevo": true
+    "Europe/Simferopol": true
+    "Europe/Skopje": true
+    "Europe/Sofia": true
+    "Europe/Stockholm": true
+    "Europe/Tallinn": true
+    "Europe/Tirane": true
+    "Europe/Tiraspol": true
+    "Europe/Uzhgorod": true
+    "Europe/Vaduz": true
+    "Europe/Vatican": true
+    "Europe/Vienna": true
+    "Europe/Vilnius": true
+    "Europe/Volgograd": true
+    "Europe/Warsaw": true
+    "Europe/Zagreb": true
+    "Europe/Zaporozhye": true
+    "Europe/Zurich": true
+    "GB": true
+    "GB-Eire": true
+    "GMT": true
+    "GMT+0": true
+    "GMT0": true
+    "GMT-0": true
+    "Greenwich": true
+    "Hongkong": true
+    "Iceland": true
+    "Indian/Antananarivo": true
+    "Indian/Chagos": true
+    "Indian/Christmas": true
+    "Indian/Cocos": true
+    "Indian/Comoro": true
+    "Indian/Kerguelen": true
+    "Indian/Mahe": true
+    "Indian/Maldives": true
+    "Indian/Mauritius": true
+    "Indian/Mayotte": true
+    "Indian/Reunion": true
+    "Iran": true
+    "Israel": true
+    "Jamaica": true
+    "Japan": true
+    "Kwajalein": true
+    "Libya": true
+    "Mexico/BajaNorte": true
+    "Mexico/BajaSur": true
+    "Mexico/General": true
+    "Navajo": true
+    "NZ": true
+    "NZ-CHAT": true
+    "Pacific/Apia": true
+    "Pacific/Auckland": true
+    "Pacific/Chatham": true
+    "Pacific/Chuuk": true
+    "Pacific/Easter": true
+    "Pacific/Efate": true
+    "Pacific/Enderbury": true
+    "Pacific/Fakaofo": true
+    "Pacific/Fiji": true
+    "Pacific/Funafuti": true
+    "Pacific/Galapagos": true
+    "Pacific/Gambier": true
+    "Pacific/Guadalcanal": true
+    "Pacific/Guam": true
+    "Pacific/Honolulu": true
+    "Pacific/Johnston": true
+    "Pacific/Kiritimati": true
+    "Pacific/Kosrae": true
+    "Pacific/Kwajalein": true
+    "Pacific/Majuro": true
+    "Pacific/Marquesas": true
+    "Pacific/Midway": true
+    "Pacific/Nauru": true
+    "Pacific/Niue": true
+    "Pacific/Norfolk": true
+    "Pacific/Noumea": true
+    "Pacific/Pago_Pago": true
+    "Pacific/Palau": true
+    "Pacific/Pitcairn": true
+    "Pacific/Pohnpei": true
+    "Pacific/Ponape": true
+    "Pacific/Port_Moresby": true
+    "Pacific/Rarotonga": true
+    "Pacific/Saipan": true
+    "Pacific/Samoa": true
+    "Pacific/Tahiti": true
+    "Pacific/Tarawa": true
+    "Pacific/Tongatapu": true
+    "Pacific/Truk": true
+    "Pacific/Wake": true
+    "Pacific/Wallis": true
+    "Pacific/Yap": true
+    "Poland": true
+    "Portugal": true
+    "PRC": true
+    "ROC": true
+    "ROK": true
+    "Singapore": true
+    "Turkey": true
+    "UCT": true
+    "Universal": true
+    "US/Alaska": true
+    "US/Aleutian": true
+    "US/Arizona": true
+    "US/Central": true
+    "US/Eastern": true
+    "US/East-Indiana": true
+    "US/Hawaii": true
+    "US/Indiana-Starke": true
+    "US/Michigan": true
+    "US/Mountain": true
+    "US/Pacific": true
+    "US/Samoa": true
+    "UTC": true
+    "W-SU": true
+    "Zulu": true
+}

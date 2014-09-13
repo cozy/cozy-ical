@@ -1,5 +1,6 @@
 time = require 'time'
 moment = require 'moment'
+timezones = requires './timezones'
 
 
 icalDateToUTC = (date, tzid) ->
@@ -48,6 +49,7 @@ module.exports = (Event) ->
 
     Event.extractEvents = (component, timezone) ->
         events = []
+        timezone = 'UTC' unless timezones[timezone]
         component.walk (component) ->
             if component.name is 'VEVENT'
                 events.push Event.fromIcal component, timezone
