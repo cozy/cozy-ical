@@ -2,11 +2,11 @@
   "name": "cozy-ical",
   "version": "0.2.3",
   "description": "Cozy-Ical provides ICal Parser, generators and helpers",
-  "main": "lib/index.js",
+  "main": "lib/index",
   "scripts": {
     "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script --colors",
     "build": "coffee -cb --output lib/ src/",
-    "prepublish": "npm build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
