@@ -40,7 +40,7 @@ module.exports = (Alarm) ->
         component.walk (component) ->
             if component.name is 'VTIMEZONE' \
             and component.fields["TZID"]? \
-            and component.fields["TZID"] not in timezones
+            and component.fields["TZID"] in timezones
                 timezone = component.fields["TZID"]
             else if component.name is 'VTODO'
                 alarms.push Alarm.fromIcal component, timezone
