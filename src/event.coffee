@@ -29,6 +29,8 @@ module.exports = (Event) ->
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
         event = new Event()
+        timezone = 'UTC' unless timezones[timezone]
+
         event.description = vevent.fields["SUMMARY"] or
                             vevent.fields["DESCRIPTION"]
         event.details = vevent.fields["DESCRIPTION"] or
@@ -37,11 +39,13 @@ module.exports = (Event) ->
         event.place = vevent.fields["LOCATION"]
         event.rrule = vevent.fields["RRULE"]
 
-        startDate = icalDateToUTC vevent.fields["DTSTART"],
-            vevent.fields["DTSTART-TZID"] or timezone
+        tzStart = vevent.fields["DTSTART-TZID"] or timezone
+        tzStart = 'UTC' unless timezones[tzStart]
+        startDate = icalDateToUTC vevent.fields["DTSTART"], tzStart
 
-        endDate = icalDateToUTC vevent.fields["DTEND"],
-            vevent.fields["DTEND-TZID"] or timezone
+        tzEnd = vevent.fields["DTEND-TZID"] or timezone
+        tzEnd = 'UTC' unless timezones[tzEnd]
+        endDate = icalDateToUTC vevent.fields["DTEND"], tzEnd
 
         event.start = startDate.toString().slice 0, 24
         event.end = endDate.toString().slice 0, 24
