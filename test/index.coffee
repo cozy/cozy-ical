@@ -159,7 +159,7 @@ describe "Calendar export/import", ->
                     END:VCALENDAR
                 """, (err, comp) =>
                     should.not.exist err
-                    @alarm = Alarm.extractAlarms(comp)[0]
+                    @alarm = Alarm.extractAlarms(comp, 'BadTimezone')[0]
                     @alarm.id.should.equal '3615'
                     @alarm.description.should.equal 'this is a title'
                     done()
@@ -181,7 +181,7 @@ describe "Calendar export/import", ->
                     should.exist @event.details
 
                     event2 = events[0]
-                    event2.start.should.equal 'Wed Jul 31 2013 14:00:00' # UTC
+                    event2.start.should.equal 'Wed Jul 31 2013 16:00:00' # UTC
                     should.exist event2.rrule
                     done()
 
