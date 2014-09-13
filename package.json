@@ -5,8 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script --colors",
-    "build": "coffee --compile --output lib/ src/",
-    "prepublish": "npm run build"
+    "build": "coffee -cb --output lib/ src/",
+    "prepublish": "npm build"
   },
   "repository": {
     "type": "git",
