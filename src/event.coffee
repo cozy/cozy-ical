@@ -1,6 +1,6 @@
 time = require 'time'
 moment = require 'moment'
-timezones = requires './timezones'
+timezones = require './timezones'
 
 
 icalDateToUTC = (date, tzid) ->
