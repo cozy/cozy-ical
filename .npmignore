@@ -1,0 +1,5 @@
+*.coffee
+todo
+.git*
+.project
+src
