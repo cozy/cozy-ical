@@ -35,10 +35,13 @@ module.exports = (Alarm) ->
         alarm
 
     Alarm.extractAlarms = (component, timezone) ->
+        timezones = require './timezones'
         alarms = []
         component.walk (component) ->
-            if component.name is 'VTIMEZONE'
+            if component.name is 'VTIMEZONE' \
+            and component.fields["TZID"]? \
+            and component.fields["TZID"] not in timezones
                 timezone = component.fields["TZID"]
-            if component.name is 'VTODO'
+            else if component.name is 'VTODO'
                 alarms.push Alarm.fromIcal component, timezone
         alarms
