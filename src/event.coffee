@@ -31,9 +31,10 @@ module.exports = (Event) ->
         return event
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
-        
+
         event = new Event()
-        timezone = 'UTC' unless timezones[timezone]
+        # timezone = 'UTC' unless timezones[timezone]
+        timezone = 'UTC'
 
         event.description = vevent.fields["SUMMARY"] or
                             vevent.fields["DESCRIPTION"]
@@ -42,17 +43,31 @@ module.exports = (Event) ->
 
         event.place = vevent.fields["LOCATION"]
         event.rrule = vevent.fields["RRULE"]
+        #
+        # Punctual event start en end.
 
-        tzStart = vevent.fields["DTSTART-TZID"] or timezone
-        tzStart = 'UTC' unless timezones[tzStart]
-        startDate = icalDateToUTC vevent.fields["DTSTART"], tzStart
+        #
+        tzStart = vevent.fields['DTSTART-TZID'] or timezone
+        tzStart = 'UTC' unless timezones[tzStart] # Filter by timezone list ...?
+        # startDate = icalDateToUTC vevent.fields["DTSTART"], tzStart
+        event.start = moment.tz(vevent.fields['DTSTART'], vevent.icalDTFormat, tzStart).toISOString()
+        # TODO : handle full day ...
 
+        
         tzEnd = vevent.fields["DTEND-TZID"] or timezone
         tzEnd = 'UTC' unless timezones[tzEnd]
-        endDate = icalDateToUTC vevent.fields["DTEND"], tzEnd
+        event.end = moment.tz(vevent.fields['DTEND'], vevent.icalDTFormat, tzEnd).toISOString()
 
-        event.start = startDate.toString().slice 0, 24
-        event.end = endDate.toString().slice 0, 24
+        # recurrent events :
+        if event.rrule
+            event.timezone = tzStart
+            event.start = event.start.slice(0, -1)
+            event.end = event.end.slice(0,-1)
+
+        # endDate = icalDateToUTC vevent.fields["DTEND"], tzEnd
+
+        # event.start = startDate.toString().slice 0, 24
+        # event.end = endDate.toString().slice 0, 24
         event
 
     Event.extractEvents = (component, timezone) ->

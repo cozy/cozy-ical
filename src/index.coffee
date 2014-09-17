@@ -157,6 +157,9 @@ module.exports.VEvent = class VEvent extends VComponent
         # TODO: DTSTAMP ?
         @fields.DESCRIPTION = description if description?
 
+        # Skip for parser objec.
+        if startDate == undefined
+            return
         # TODO later !
         # if wholeDay
         #    @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
