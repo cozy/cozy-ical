@@ -96,7 +96,18 @@ module.exports.VCalendar = class VCalendar extends VComponent
             VERSION: "2.0"
 
         @fields['PRODID'] = "-//#{organization}//NONSGML #{title}//EN"
+        @timezones = {}
 
+    addTimezone: (timezone) -> 
+        if timezone not of @timezone
+            @timezones[timezone] = true
+
+    toString: ->
+        buf = new iCalBuffer
+        buf.addLine "BEGIN:#{@name}"
+        buf.addLine "#{att}:#{val}" for att, val of @fields
+        buf.addLine component.toString() for component in @subComponents
+        buf.addString "END:#{@name}"
 
 # An alarm is there to warn the calendar owner of something. It could be
 # included in an event or in a todo.
@@ -132,21 +143,47 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description, wholeDay) ->
+    #  To move up.
+    icalDTUTCFormat: 'YYYYMMDDTHHmm[00Z]'
+    icalDTFormat: 'YYYYMMDDTHHmm[00]'
+
+    constructor: (startDate, endDate, summary, location, uid, description, wholeDay, rrule, timezone) ->
         super
         @fields =
             SUMMARY:     summary
             LOCATION:    location
             UID:         uid
 
+        # TODO: DTSTAMP ?
         @fields.DESCRIPTION = description if description?
 
-        if wholeDay
-           @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
-           @fields["DTEND;VALUE=DATE"] = @formatIcalDate endDate, wholeDay
-        else
-           @fields["DTSTART;VALUE=DATE-TIME"] = "#{@formatIcalDate startDate}Z"
-           @fields["DTEND;VALUE=DATE-TIME"] = "#{@formatIcalDate endDate}Z"
+        # TODO later !
+        # if wholeDay
+        #    @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
+        #    @fields["DTEND;VALUE=DATE"] = @formatIcalDate endDate, wholeDay
+        # else
+           # @fields["DTSTART;VALUE=DATE-TIME"] = "#{@formatIcalDate startDate}Z"
+           # @fields["DTEND;VALUE=DATE-TIME"] = "#{@formatIcalDate endDate}Z"
+        fieldS = 'DTSTART'
+        fieldE = 'DTEND'
+        valueS = null
+        valueE = null
+
+        if rrule
+            # TODO : add the timezone as a VTIMEZONE...
+            fieldS += ";TZID=#{timezone}"
+            fieldE += ";TZID=#{ timezone }"
+            valueS = startDate.format(@icalDTFormat)
+            valueE = endDate.format(@icalDTFormat)
+
+            @fields['RRULE'] = rrule
+        else # Punctual event.
+            valueS = startDate.format(@icalDTUTCFormat)
+            valueE = endDate.format(@icalDTUTCFormat)
+
+        @fields[fieldS] = valueS
+        @fields[fieldE] = valueE
+
 
 
 module.exports.VTimezone = class VTimezone extends VComponent

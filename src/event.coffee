@@ -1,5 +1,5 @@
 time = require 'time'
-moment = require 'moment'
+moment = require 'moment-timezone'
 timezones = require './timezones'
 
 
@@ -17,17 +17,21 @@ icalDateToUTC = (date, tzid) ->
 module.exports = (Event) ->
     {VCalendar, VEvent} = require './index'
 
-    Event::toIcal = (timezone = "UTC") ->
-        startDate = new time.Date @start
-        endDate   = new time.Date @end
-        startDate.setTimezone timezone, false
-        endDate.setTimezone timezone, false
+    # Event::toIcal = (timezone = "UTC") ->
+    Event::toIcal = ->
+        # Stay in event locale timezone for recurrent events.
+        timezone = (if @rrule then @timezone else 'GMT')
+
         event = new VEvent(
-            startDate, endDate, @description, @place, @id, @details)
-        event.fields['RRULE'] = @rrule if @rrule
+            moment.tz(@start, timezone),
+            moment.tz(@end, timezone),
+            @description, @place, @id, @details, undefined # wholeday
+            @rrule, @timezone)
+
         return event
 
     Event.fromIcal = (vevent, timezone = "UTC") ->
+        
         event = new Event()
         timezone = 'UTC' unless timezones[timezone]
 
