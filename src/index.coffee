@@ -1,5 +1,5 @@
 fs = require 'fs'
-moment = require 'moment'
+moment = require 'moment-timezone'
 lazy = require 'lazy'
 
 module.exports.decorateAlarm = require './alarm'
@@ -61,6 +61,9 @@ class iCalBuffer
 module.exports.VComponent = class VComponent
     name: 'VCOMPONENT'
 
+    icalDTUTCFormat: 'YYYYMMDDTHHmm[00Z]'
+    icalDTFormat: 'YYYYMMDDTHHmm[00]'
+
     constructor: ->
         @subComponents = []
         @fields = {}
@@ -96,16 +99,18 @@ module.exports.VCalendar = class VCalendar extends VComponent
             VERSION: "2.0"
 
         @fields['PRODID'] = "-//#{organization}//NONSGML #{title}//EN"
-        @timezones = {}
+        @vtimezones = {}
 
+    # Unused 20140918.
     addTimezone: (timezone) -> 
-        if timezone not of @timezone
-            @timezones[timezone] = true
+        if timezone not of @vtimezones
+            @vtimezones[timezone] = new VTimezone(moment(), timezone)
 
     toString: ->
         buf = new iCalBuffer
         buf.addLine "BEGIN:#{@name}"
         buf.addLine "#{att}:#{val}" for att, val of @fields
+        buf.addLine vtimezone.toString() for _,vtimezone of @vtimezones
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
 
@@ -143,10 +148,6 @@ module.exports.VTodo = class VTodo extends VComponent
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    #  To move up.
-    icalDTUTCFormat: 'YYYYMMDDTHHmm[00Z]'
-    icalDTFormat: 'YYYYMMDDTHHmm[00]'
-
     constructor: (startDate, endDate, summary, location, uid, description, wholeDay, rrule, timezone) ->
         super
         @fields =
@@ -179,6 +180,7 @@ module.exports.VEvent = class VEvent extends VComponent
             valueS = startDate.format(@icalDTFormat)
             valueE = endDate.format(@icalDTFormat)
 
+
             @fields['RRULE'] = rrule
         else # Punctual event.
             valueS = startDate.format(@icalDTUTCFormat)
@@ -190,16 +192,20 @@ module.exports.VEvent = class VEvent extends VComponent
 
 
 module.exports.VTimezone = class VTimezone extends VComponent
-    name: 'VTIMEZONE'
+    name: 'VTIMEZONE' 
 
+    # constructor: (timezone) ->
     constructor: (startDate, timezone) ->
         super
         @fields =
             TZID: timezone
             TZURL: "http://tzurl.org/zoneinfo/#{timezone}.ics"
 
+
+        # zone = moment.tz.zone(timezone)
+        # @add new VStandard 
         # startShift and endShift are equal because, actually, only alarm has timezone
-        diff = formatUTCOffset startDate, timezone
+        diff = moment.tz(startDate, timezone).format('ZZ')
         vstandard = new VStandard startDate, diff, diff
         @add vstandard
         vdaylight = new VDaylight startDate, diff, diff
@@ -220,7 +226,7 @@ module.exports.VStandard = class VStandard extends VComponent
     constructor: (startDate, startShift, endShift) ->
         super
         @fields =
-            DTSTART: @formatIcalDate startDate
+            DTSTART: startDate.format(@icalDTFormat)
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
@@ -231,7 +237,7 @@ module.exports.VDaylight = class VDaylight extends VComponent
     constructor: (startDate, startShift, endShift) ->
         super
         @fields =
-            DTSTART: @formatIcalDate startDate
+            DTSTART: startDate.format(@icalDTFormat)
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
