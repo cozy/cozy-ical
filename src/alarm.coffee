@@ -1,5 +1,4 @@
-time = require 'time'
-moment = require 'moment'
+moment = require 'moment-timezone'
 timezones = require './timezones'
 
 module.exports = (Alarm) ->
@@ -13,11 +12,24 @@ module.exports = (Alarm) ->
         vtimezone = new VTimezone date, @timezone
         vtimezone
 
-    Alarm::toIcal = (timezone) ->
-        date = new time.Date @trigg
-        date.setTimezone timezone, false
-        vtodo = new VTodo date, @id, @description, @details
-        vtodo.addAlarm date
+    Alarm::toIcal = ->
+        # Cozy alarms are VAlarm nested in implicit VTodo,
+        # with trigg == VTodo.DTSTART ; and VAlarm.trigger == PT0M.
+
+        # If recurrent alarms : timezone = (if @rrule then @timezone else 'GMT')
+        timezone = 'GMT' # only UTC.
+        startDate = moment.tz(@trigg, timezone)
+        vtodo = new VTodo startDate, @id, @description, @details
+
+        if @action in ['DISPLAY', 'BOTH']
+            vtodo.addAlarm('DISPLAY', @description)
+
+        if @action in ['EMAIL', 'BOTH']
+            vtodo.addAlarm('EMAIL', 
+                "#{@description} #{@details}",
+                'example@example.com',#TODO : get the user address.
+                @description)
+        
         vtodo
 
     Alarm.fromIcal = (valarm, timezone = "UTC") ->

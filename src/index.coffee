@@ -63,6 +63,7 @@ module.exports.VComponent = class VComponent
 
     icalDTUTCFormat: 'YYYYMMDDTHHmm[00Z]'
     icalDTFormat: 'YYYYMMDDTHHmm[00]'
+    icalDateFormat: 'YYYYMMDD'
 
     constructor: ->
         @subComponents = []
@@ -119,36 +120,42 @@ module.exports.VCalendar = class VCalendar extends VComponent
 module.exports.VAlarm = class VAlarm extends VComponent
     name: 'VALARM'
 
-    constructor: (date) ->
+    constructor: (trigger, action, description, attendee, summary) ->
         super
         @fields =
-            ACTION: 'DISPLAY'
-            REPEAT: '1'
-            "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
+            ACTION: action
+            #REPEAT: '1'
+            DESCRIPTION: description
+            TRIGGER: trigger
+            # "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
+
+        if action is 'EMAIL'
+            @fields.ATTENDEE = attendee
+            @fields.SUMMARY = summary
 
 
 # The VTodo is used to described a dated action.
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (date, uid, summary, description) ->
+    constructor: (startDate, uid, summary, description) ->
         super
         @fields =
-            DTSTAMP: @formatIcalDate(date) + 'Z'
+            DTSTAMP: startDate.format(@icalDTUTCFormat)
             SUMMARY: summary
             UID: uid
 
         @fields.DESCRIPTION = description if description?
 
-    addAlarm: (date) ->
-        @add new VAlarm date
+    addAlarm: (action, description, attendee, summary) ->
+        @add new VAlarm('PT0M', action, description, attendee, summary)
 
 
 # Additional components not supported yet by Cozy Cloud.
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description, wholeDay, rrule, timezone) ->
+    constructor: (startDate, endDate, summary, location, uid, description, allDay, rrule, timezone) ->
         super
         @fields =
             SUMMARY:     summary
@@ -161,19 +168,19 @@ module.exports.VEvent = class VEvent extends VComponent
         # Skip for parser objec.
         if startDate == undefined
             return
-        # TODO later !
-        # if wholeDay
-        #    @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
-        #    @fields["DTEND;VALUE=DATE"] = @formatIcalDate endDate, wholeDay
-        # else
-           # @fields["DTSTART;VALUE=DATE-TIME"] = "#{@formatIcalDate startDate}Z"
-           # @fields["DTEND;VALUE=DATE-TIME"] = "#{@formatIcalDate endDate}Z"
+
         fieldS = 'DTSTART'
         fieldE = 'DTEND'
         valueS = null
         valueE = null
 
-        if rrule
+        if allDay
+            fieldS += ";VALUE=DATE"
+            fieldE += ";VALUE=DATE"
+            valueS = startDate.format(@icalDateFormat)
+            valueE = endDate.format(@icalDateFormat)
+
+        else if rrule
             # TODO : add the timezone as a VTIMEZONE...
             fieldS += ";TZID=#{timezone}"
             fieldE += ";TZID=#{ timezone }"

@@ -1,4 +1,3 @@
-time = require 'time'
 moment = require 'moment-timezone'
 timezones = require './timezones'
 
@@ -15,7 +14,7 @@ icalDateToUTC = (date, tzid) ->
 
 
 module.exports = (Event) ->
-    {VCalendar, VEvent} = require './index'
+    {VCalendar, VEvent, VAlarm} = require './index'
 
     # Event::toIcal = (timezone = "UTC") ->
     Event::toIcal = ->
@@ -25,8 +24,20 @@ module.exports = (Event) ->
         event = new VEvent(
             moment.tz(@start, timezone),
             moment.tz(@end, timezone),
-            @description, @place, @id, @details, undefined # wholeday
+            @description, @place, @id, @details, 
+            @start.length == 10, # allDay
             @rrule, @timezone)
+
+        @alarms?.forEach (alarm) =>
+            if alarm.action in ['DISPLAY', 'BOTH']
+                event.add new VAlarm(alarm.trigg, 'DISPLAY', @description)
+
+            if alarm.action in ['EMAIL', 'BOTH']
+                event.add new VAlarm(alarm.trigg, 'EMAIL',
+                "#{@description} #{@details}",
+                'example@example.com',#TODO : get the user address.
+                @description)
+
 
         return event
 
