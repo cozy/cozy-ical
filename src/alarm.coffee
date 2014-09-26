@@ -32,29 +32,26 @@ module.exports = (Alarm) ->
         
         vtodo
 
-    Alarm.fromIcal = (valarm, timezone = "UTC") ->
+    Alarm.fromIcal = (vtodo) ->
         alarm = new Alarm()
-        alarm.id = valarm.fields["UID"] if valarm.fields["UID"]
-        alarm.description = valarm.fields["SUMMARY"] or
-                            valarm.fields["DESCRIPTION"]
-        alarm.details = valarm.fields["DESCRIPTION"] or
-                        valarm.fields["SUMMARY"]
+        alarm.id = vtodo.fields["UID"] if vtodo.fields["UID"]
+        alarm.description = vtodo.fields["SUMMARY"] or
+                            vtodo.fields["DESCRIPTION"]
+        alarm.details = vtodo.fields["DESCRIPTION"] or
+                        vtodo.fields["SUMMARY"]
 
-        date = valarm.fields["DTSTAMP"]
-        date = moment(date, "YYYYMMDDTHHmm00")
-        triggerDate = new time.Date new Date(date), timezone
-        alarm.trigg = triggerDate.toString().slice(0, 24)
-        alarm.timezone = timezone
+        alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString() # TODO defensive !?
+
+        valarms = vtodo.subComponents.filter (c) -> c.name is 'VALARM'
+        if valarms # TODO : if no action ?
+            alarm.action == valarms[0].fields['ACTION']
+
         alarm
 
     Alarm.extractAlarms = (component, timezone) ->
         timezone = 'UTC' unless timezones[timezone]
         alarms = []
         component.walk (component) ->
-            if component.name is 'VTIMEZONE' \
-            and component.fields["TZID"]? \
-            and timezones[component.fields["TZID"]]
-                timezone = component.fields["TZID"]
-            else if component.name is 'VTODO'
+            if component.name is 'VTODO'
                 alarms.push Alarm.fromIcal component, timezone
         alarms

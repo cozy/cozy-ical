@@ -61,9 +61,9 @@ class iCalBuffer
 module.exports.VComponent = class VComponent
     name: 'VCOMPONENT'
 
-    icalDTUTCFormat: 'YYYYMMDDTHHmm[00Z]'
-    icalDTFormat: 'YYYYMMDDTHHmm[00]'
-    icalDateFormat: 'YYYYMMDD'
+    @icalDTUTCFormat: 'YYYYMMDD[T]HHmm[00Z]'
+    @icalDTFormat: 'YYYYMMDDTHHmm[00]'
+    @icalDateFormat: 'YYYYMMDD'
 
     constructor: ->
         @subComponents = []
@@ -122,6 +122,9 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
     constructor: (trigger, action, description, attendee, summary) ->
         super
+
+        if not trigger # Parsing constructor
+            return
         @fields =
             ACTION: action
             #REPEAT: '1'
@@ -140,8 +143,10 @@ module.exports.VTodo = class VTodo extends VComponent
 
     constructor: (startDate, uid, summary, description) ->
         super
+        if not startDate # Parsing constructor
+            return
         @fields =
-            DTSTAMP: startDate.format(@icalDTUTCFormat)
+            DTSTART: startDate.format(VTodo.icalDTUTCFormat)
             SUMMARY: summary
             UID: uid
 
@@ -157,6 +162,9 @@ module.exports.VEvent = class VEvent extends VComponent
 
     constructor: (startDate, endDate, summary, location, uid, description, allDay, rrule, timezone) ->
         super
+        if not startDate # Parsing constructor
+            return
+
         @fields =
             SUMMARY:     summary
             LOCATION:    location
@@ -164,10 +172,6 @@ module.exports.VEvent = class VEvent extends VComponent
 
         # TODO: DTSTAMP ?
         @fields.DESCRIPTION = description if description?
-
-        # Skip for parser objec.
-        if startDate == undefined
-            return
 
         fieldS = 'DTSTART'
         fieldE = 'DTEND'
@@ -177,21 +181,21 @@ module.exports.VEvent = class VEvent extends VComponent
         if allDay
             fieldS += ";VALUE=DATE"
             fieldE += ";VALUE=DATE"
-            valueS = startDate.format(@icalDateFormat)
-            valueE = endDate.format(@icalDateFormat)
+            valueS = startDate.format(VEvent.icalDateFormat)
+            valueE = endDate.format(VEvent.icalDateFormat)
 
         else if rrule
             # TODO : add the timezone as a VTIMEZONE...
             fieldS += ";TZID=#{timezone}"
             fieldE += ";TZID=#{ timezone }"
-            valueS = startDate.format(@icalDTFormat)
-            valueE = endDate.format(@icalDTFormat)
+            valueS = startDate.format(VEvent.icalDTFormat)
+            valueE = endDate.format(VEvent.icalDTFormat)
 
 
             @fields['RRULE'] = rrule
         else # Punctual event.
-            valueS = startDate.format(@icalDTUTCFormat)
-            valueE = endDate.format(@icalDTUTCFormat)
+            valueS = startDate.format(VEvent.icalDTUTCFormat)
+            valueE = endDate.format(VEvent.icalDTUTCFormat)
 
         @fields[fieldS] = valueS
         @fields[fieldE] = valueE
@@ -204,6 +208,9 @@ module.exports.VTimezone = class VTimezone extends VComponent
     # constructor: (timezone) ->
     constructor: (startDate, timezone) ->
         super
+        if not startDate # Parsing constructor
+            return
+            
         @fields =
             TZID: timezone
             TZURL: "http://tzurl.org/zoneinfo/#{timezone}.ics"
@@ -232,8 +239,11 @@ module.exports.VStandard = class VStandard extends VComponent
 
     constructor: (startDate, startShift, endShift) ->
         super
+        if not startDate # Parsing constructor
+            return
+            
         @fields =
-            DTSTART: startDate.format(@icalDTFormat)
+            DTSTART: moment(startDate).format(VStandard.icalDTFormat)
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
@@ -243,8 +253,11 @@ module.exports.VDaylight = class VDaylight extends VComponent
 
     constructor: (startDate, startShift, endShift) ->
         super
+        if not startDate # Parsing constructor
+            return
+            
         @fields =
-            DTSTART: startDate.format(@icalDTFormat)
+            DTSTART: moment(startDate).format(VDaylight.icalDTFormat)
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
