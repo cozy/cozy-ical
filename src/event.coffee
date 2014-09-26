@@ -54,15 +54,22 @@ module.exports = (Event) ->
             timezone = vevent.fields['DTSTART-TZID']
             timezone = 'GMT' unless timezones[timezone] # Filter by timezone list ...?
             
-            if event.rrule
-            # if timezone is not 'GMT'
-                event.timezone = timezone
-                event.start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTFormat, timezone).format(Event.ambiguousDTFormat)
-                event.end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTFormat, timezone).format(Event.ambiguousDTFormat)
+            if timezone != 'GMT'
+                start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTFormat, timezone)
+                end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTFormat, timezone)
 
             else
-                event.start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTUTCFormat, 'GMT').format(Event.utcDTFormat)
-                event.end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'GMT').format(Event.utcDTFormat)
+                start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTUTCFormat, 'GMT')
+                end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'GMT')
+            
+            # Format, only RRule don't use UTC
+            if event.rrule
+                event.timezone = timezone
+                event.start = start.format(Event.ambiguousDTFormat)
+                event.end = end.format(Event.ambiguousDTFormat)
+            else
+                event.start = start.toISOString()
+                event.end = end.toISOString()
 
         # Alarms
         alarms = [] 
