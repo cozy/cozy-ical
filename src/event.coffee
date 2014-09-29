@@ -20,11 +20,11 @@ module.exports = (Event) ->
             if alarm.action in ['DISPLAY', 'BOTH']
                 event.add new VAlarm(alarm.trigg, 'DISPLAY', @description)
 
-            if alarm.action in ['EMAIL', 'BOTH']
-                event.add new VAlarm(alarm.trigg, 'EMAIL',
-                "#{@description} #{@details}",
-                'example@example.com',#TODO : get the user address.
-                @description)
+            # if alarm.action in ['EMAIL', 'BOTH']
+            #     event.add new VAlarm(alarm.trigg, 'EMAIL',
+            #     "#{@description} #{@details}",
+            #     'example@example.com',#TODO : get the user address.
+            #     @description)
 
 
         return event
