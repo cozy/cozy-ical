@@ -129,9 +129,10 @@ module.exports.VAlarm = class VAlarm extends VComponent
             return
         @fields =
             ACTION: action
-            REPEAT: '0'
+            # REPEAT: '0' # Lightning don't like it.
             DESCRIPTION: description
             TRIGGER: trigger
+            # 'TRIGGER;VALUE=DURATION': trigger
             # "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
 
         if action is 'EMAIL'
@@ -194,7 +195,12 @@ module.exports.VEvent = class VEvent extends VComponent
             valueE = endDate.format(VEvent.icalDTFormat)
 
 
+            # @fields['RRULE'] = rrule # Lightning does'nt recognise it.
+            # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
+
+            rrule = rrule.split(';').filter((s) -> s.indexOf('DTSTART') != 0).join(';')
             @fields['RRULE'] = rrule
+
         else # Punctual event.
             valueS = startDate.format(VEvent.icalDTUTCFormat)
             valueE = endDate.format(VEvent.icalDTUTCFormat)
