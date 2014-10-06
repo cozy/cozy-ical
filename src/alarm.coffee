@@ -7,29 +7,30 @@ module.exports = (Alarm) ->
     Alarm.getICalCalendar = (name='Cozy Agenda') ->
         calendar = new VCalendar 'Cozy Cloud', name
 
-    Alarm::timezoneToIcal = () ->
-        date = new time.Date @trigg
-        vtimezone = new VTimezone date, @timezone
-        vtimezone
-
     Alarm::toIcal = ->
         # Cozy alarms are VAlarm nested in implicit VTodo,
         # with trigg == VTodo.DTSTART ; and VAlarm.trigger == PT0M.
 
+        # Return undefined if mandatory elements miss.
+
         # If recurrent alarms : timezone = (if @rrule then @timezone else 'GMT')
         timezone = 'GMT' # only UTC.
-        startDate = moment.tz(@trigg, timezone)
-        vtodo = new VTodo startDate, @id, @description, @details
+        try startDate = moment.tz(@trigg, timezone)
+        catch e then return undefined
+
+        vtodo = new VTodo startDate, @id, @description
 
         if @action in ['DISPLAY', 'BOTH']
             vtodo.addAlarm('DISPLAY', @description)
 
-        if @action in ['EMAIL', 'BOTH']
-            vtodo.addAlarm('EMAIL', 
-                "#{@description} #{@details}",
-                'example@example.com',#TODO : get the user address.
-                @description)
-        
+        # if @action in ['EMAIL', 'BOTH']
+        #     vtodo.addAlarm('EMAIL', 
+        #         "#{@description} #{@details}",
+        #         'example@example.com', #TODO : get the user address.
+        #         @description)
+
+        # else : ignore other actions.
+
         vtodo
 
     Alarm.fromIcal = (vtodo) ->
@@ -37,14 +38,39 @@ module.exports = (Alarm) ->
         alarm.id = vtodo.fields["UID"] if vtodo.fields["UID"]
         alarm.description = vtodo.fields["SUMMARY"] or
                             vtodo.fields["DESCRIPTION"]
-        alarm.details = vtodo.fields["DESCRIPTION"] or
-                        vtodo.fields["SUMMARY"]
-
-        alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString() # TODO defensive !?
+        # alarm.details = vtodo.fields["DESCRIPTION"] or
+        #                 vtodo.fields["SUMMARY"]
+        try alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString() # TODO defensive !?
+        catch e then return undefined
 
         valarms = vtodo.subComponents.filter (c) -> c.name is 'VALARM'
-        if valarms # TODO : if no action ?
-            alarm.action == valarms[0].fields['ACTION']
+        if valarms.length == 0 
+            return undefined # Only VTodo with VAlarm can be usefull in cozy.
+        else
+            actions = valarms.reduce (actions, valarm) -> 
+                if 'BOTH' of actions
+                    return actions
+
+                if valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M']
+                    return actions
+                action = valarms.fields['ACTION']
+
+                if action is 'DISPLAY'
+                    if 'EMAIL' of actions
+                        actions = 'BOTH': true
+                    else
+                        actions[action] = true
+                if action is 'EMAIL'
+                    if 'DISPLAY' of actions
+                        actions = 'BOTH' : true
+                    else actions[action] = true
+
+            , {}
+            actions = Object.keys(actions)
+            if actions.length is 0
+                return undefined
+
+            else alarm.action = actions
 
         alarm
 
@@ -53,5 +79,7 @@ module.exports = (Alarm) ->
         alarms = []
         component.walk (component) ->
             if component.name is 'VTODO'
-                alarms.push Alarm.fromIcal component, timezone
+                alarm = Alarm.fromIcal component, timezone
+                if alarm? # skip unreadable VTodo.
+                    alarms.push alarm 
         alarms

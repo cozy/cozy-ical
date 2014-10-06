@@ -83,7 +83,9 @@ module.exports.VComponent = class VComponent
           moment(date).format('YYYYMMDDTHHmm00')
 
     add: (component) ->
-        @subComponents.push component
+        # Skipp invalid component
+        if component?
+            @subComponents.push component
 
     walk: (walker) ->
         walker this
@@ -127,7 +129,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
             return
         @fields =
             ACTION: action
-            #REPEAT: '1'
+            REPEAT: '0'
             DESCRIPTION: description
             TRIGGER: trigger
             # "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
