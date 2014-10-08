@@ -4,17 +4,23 @@ timezones = require './timezones'
 module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
 
-    # Event::toIcal = (timezone = "UTC") ->
     Event::toIcal = ->
-        # Stay in event locale timezone for recurrent events.
-        timezone = (if @rrule then @timezone else 'GMT')
+        # Return undefined if mandatory elements miss.
 
-        event = new VEvent(
-            moment.tz(@start, timezone),
-            moment.tz(@end, timezone),
-            @description, @place, @id, @details, 
-            @start.length == 10, # allDay
-            @rrule, @timezone)
+        # Stay in event locale timezone for recurrent events.
+        timezone = 'UTC' # Default for non recurrent events.
+        if @rrule and @timezone
+            timezone = @timezone
+            # CAUTION recurrent event wihtout timezone is invalid.
+
+        try
+            event = new VEvent(
+                moment.tz(@start, timezone),
+                moment.tz(@end, timezone),
+                @description, @place, @id, @details, 
+                @start.length == 10, # allDay
+                @rrule, @timezone)
+        catch e then return undefined # all those elements are mandatory.
 
         @alarms?.forEach (alarm) =>
             if alarm.action in ['DISPLAY', 'BOTH']
@@ -30,46 +36,48 @@ module.exports = (Event) ->
         return event
 
     Event.fromIcal = (vevent) ->
-        #, timezone = "UTC") ->
+        # @return a valid Event object, or undefined.
 
         event = new Event()
-        # timezone = 'UTC' unless timezones[timezone]
-        timezone = 'UTC'
 
         event.description = vevent.fields["SUMMARY"] or
                             vevent.fields["DESCRIPTION"]
+        if not event.description
+            return undefined
+
         event.details = vevent.fields["DESCRIPTION"] or
                             vevent.fields["SUMMARY"]
 
         event.place = vevent.fields["LOCATION"]
         event.rrule = vevent.fields["RRULE"]
-        
-        # Cas tordus ? défensive ?
 
-        if vevent.fields['DTSTART-VALUE'] is 'DATE'
-            event.start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDateFormat, 'GMT').format(Event.dateFormat)
-            event.end = moment.tz(vevent.fields['DTEND'], VEvent.icalDateFormat, 'GMT').format(Event.dateFormat)
-            # end ...
-        else 
-            timezone = vevent.fields['DTSTART-TZID']
-            timezone = 'GMT' unless timezones[timezone] # Filter by timezone list ...?
-            
-            if timezone != 'GMT'
-                start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTFormat, timezone)
-                end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTFormat, timezone)
+        try # .start and .end are required.
+            if vevent.fields['DTSTART-VALUE'] is 'DATE'
+                event.start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDateFormat, 'GMT').format(Event.dateFormat)
+                event.end = moment.tz(vevent.fields['DTEND'], VEvent.icalDateFormat, 'GMT').format(Event.dateFormat)
+                # end ...
+            else 
+                timezone = vevent.fields['DTSTART-TZID']
+                timezone = 'UTC' unless timezones[timezone] #Filter by timezone list ...
+                
+                if timezone != 'UTC'
+                    start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTFormat, timezone)
+                    end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTFormat, timezone)
 
-            else
-                start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTUTCFormat, 'GMT')
-                end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'GMT')
-            
-            # Format, only RRule don't use UTC
-            if event.rrule
-                event.timezone = timezone
-                event.start = start.format(Event.ambiguousDTFormat)
-                event.end = end.format(Event.ambiguousDTFormat)
-            else
-                event.start = start.toISOString()
-                event.end = end.toISOString()
+                else
+                    start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDTUTCFormat, 'UTC')
+                    end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'UTC')
+                
+                # Format, only RRule doesn't use UTC
+                if event.rrule
+                    event.timezone = timezone
+                    event.start = start.format(Event.ambiguousDTFormat)
+                    event.end = end.format(Event.ambiguousDTFormat)
+                else
+                    event.start = start.toISOString()
+                    event.end = end.toISOString()
+
+        catch e then return undefined
 
         # Alarms
         alarms = [] 
@@ -87,11 +95,10 @@ module.exports = (Event) ->
 
         event
 
-    Event.extractEvents = (component, timezone) ->
+    Event.extractEvents = (component) ->
         events = []
-        timezone = 'UTC' unless timezones[timezone]
         component.walk (component) ->
             if component.name is 'VEVENT'
-                events.push Event.fromIcal component, timezone
+                events.push Event.fromIcal component
 
         events

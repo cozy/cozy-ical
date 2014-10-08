@@ -38,22 +38,33 @@ module.exports = (Alarm) ->
         alarm.id = vtodo.fields["UID"] if vtodo.fields["UID"]
         alarm.description = vtodo.fields["SUMMARY"] or
                             vtodo.fields["DESCRIPTION"]
-        # alarm.details = vtodo.fields["DESCRIPTION"] or
-        #                 vtodo.fields["SUMMARY"]
-        try alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString() # TODO defensive !?
-        catch e then return undefined
+        if not alarm.description
+            return undefined
+
+        # try # .trigg is required.
+        timezone = vtodo.fields['DTSTART-TZID']
+        timezone = 'UTC' unless timezones[timezone] #Filter by timezone list ...
+        
+        if timezone != 'UTC'
+            alarm.trigg = moment.tz(vtodo.fields['DTSTART'], VAlarm.icalDTFormat, timezone).toISOString()
+
+        else
+            alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString()
+        # catch e
+        #     console.log e
+        #     return undefined
 
         valarms = vtodo.subComponents.filter (c) -> c.name is 'VALARM'
         if valarms.length == 0 
             return undefined # Only VTodo with VAlarm can be usefull in cozy.
         else
-            actions = valarms.reduce (actions, valarm) -> 
+            actions = valarms.reduce((actions, valarm) -> 
                 if 'BOTH' of actions
                     return actions
 
-                if valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M']
+                if valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M', 'PT0S', '-PT0S', '-PT0H', '-PT0H']
                     return actions
-                action = valarms.fields['ACTION']
+                action = valarm.fields['ACTION']
 
                 if action is 'DISPLAY'
                     if 'EMAIL' of actions
@@ -65,7 +76,9 @@ module.exports = (Alarm) ->
                         actions = 'BOTH' : true
                     else actions[action] = true
 
-            , {}
+                return actions
+            , {})
+            console.log actions
             actions = Object.keys(actions)
             if actions.length is 0
                 return undefined

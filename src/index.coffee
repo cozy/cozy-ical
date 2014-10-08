@@ -151,6 +151,7 @@ module.exports.VTodo = class VTodo extends VComponent
         @fields =
             DTSTART: startDate.format(VTodo.icalDTUTCFormat)
             SUMMARY: summary
+            DURATION: 'PT30M'
             UID: uid
 
         @fields.DESCRIPTION = description if description?
