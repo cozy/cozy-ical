@@ -1,5 +1,6 @@
 moment = require 'moment-timezone'
 timezones = require './timezones'
+RRule = require('rrule').RRule
 
 module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
@@ -21,7 +22,7 @@ module.exports = (Event) ->
                 @start.length == 10, # allDay
                 @rrule, @timezone)
         catch e then return undefined # all those elements are mandatory.
-
+ 
         @alarms?.forEach (alarm) =>
             if alarm.action in ['DISPLAY', 'BOTH']
                 event.add new VAlarm(alarm.trigg, 'DISPLAY', @description)
@@ -49,7 +50,11 @@ module.exports = (Event) ->
                             vevent.fields["SUMMARY"]
 
         event.place = vevent.fields["LOCATION"]
+
+        rruleStr = vevent.fields["RRULE"]
         event.rrule = vevent.fields["RRULE"]
+
+        
 
         try # .start and .end are required.
             if vevent.fields['DTSTART-VALUE'] is 'DATE'
@@ -69,7 +74,7 @@ module.exports = (Event) ->
                     end = moment.tz(vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'UTC')
                 
                 # Format, only RRule doesn't use UTC
-                if event.rrule
+                if 'RRULE' of vevent.fields
                     event.timezone = timezone
                     event.start = start.format(Event.ambiguousDTFormat)
                     event.end = end.format(Event.ambiguousDTFormat)
@@ -78,6 +83,15 @@ module.exports = (Event) ->
                     event.end = end.toISOString()
 
         catch e then return undefined
+
+        if 'RRULE' of vevent.fields
+            options = RRule.parseString vevent.fields["RRULE"]
+            if options.freq == RRule.WEEKLY and not options.byweekday
+        # rrule = rrule.split(';').filter((s) -> s.indexOf('DTSTART') != 0).join(';')
+        
+                options.byweekday = [[RRule.SU, RRule.MO, RRule.TU, RRule.WE,RRule.TH, RRule.FR, RRule.SA][moment(event.start).day()]]
+
+            event.rrule = RRule.optionsToString options
 
         # Alarms
         alarms = [] 
