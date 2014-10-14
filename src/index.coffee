@@ -71,7 +71,8 @@ module.exports.VCalendar = class VCalendar extends VComponent
         @fields['PRODID'] = "-//#{organization}//NONSGML #{title}//EN"
         @vtimezones = {}
 
-    # Unused 20140918.
+    # VTimezone management is not included as of 18/09/2014, but code exists
+    # anyway to support them if necessary in future"
     addTimezone: (timezone) -> 
         if not @vtimezones[timezone]?
             @vtimezones[timezone] = new VTimezone moment(), timezone
@@ -86,17 +87,21 @@ module.exports.VCalendar = class VCalendar extends VComponent
 
 # An alarm is there to warn the calendar owner of something. It could be
 # included in an event or in a todo.
+# REPEAT field is ommited, as Lightning don't like the REPEAT: 0 value.
 module.exports.VAlarm = class VAlarm extends VComponent
     name: 'VALARM'
 
     constructor: (trigger, action, description, attendee, summary) ->
         super
 
-        if not trigger # Parsing constructor
-            return
+        # During parsing, VAlarm are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
+        
         @fields =
             ACTION: action
-            # REPEAT: '0' # Lightning don't like it.
+            
             DESCRIPTION: description
             TRIGGER: trigger
 
@@ -106,17 +111,27 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
 
 # The VTodo is used to described a dated action.
+#
+# cozy's alarm use VTodo to carry VAlarm. The VTodo handle the alarm datetime 
+# on it's DTSTART field. 
+# DURATION is a fixed stubbed value of 30 minutes, to avoid infinite tasks in
+# external clients (as lightning).
+# Nested VAlarm ring 0 minutes after (so: at) VTodo DTSTART.
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
     constructor: (startDate, uid, summary, description) ->
         super
-        if not startDate # Parsing constructor
-            return
+
+        # During parsing, VTodo are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
+
         @fields =
             DTSTART: startDate.format VTodo.icalDTUTCFormat
             SUMMARY: summary
-            DURATION: 'PT30M'
+            DURATION: 'PT30M' 
             UID: uid
 
         @fields.DESCRIPTION = description if description?
@@ -131,8 +146,11 @@ module.exports.VEvent = class VEvent extends VComponent
 
     constructor: (startDate, endDate, summary, location, uid, description, allDay, rrule, timezone) ->
         super
-        if not startDate # Parsing constructor
-            return
+
+        # During parsing, VEvent are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
 
         @fields =
             SUMMARY:     summary
@@ -161,8 +179,10 @@ module.exports.VEvent = class VEvent extends VComponent
             # Lightning can't parse RRULE with DTSTART field in it.
             # So skip it from the RRULE, which is formated like this :
             # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
-            rrule = rrule.split(';').filter((s) -> s.indexOf('DTSTART') isnt 0
-                ).join ';'
+            rrule = rrule.split ';'
+                   .filter((s) -> s.indexOf('DTSTART') isnt 0
+                   .join ';'
+
             @fields['RRULE'] = rrule
 
         else # Punctual event.
@@ -174,13 +194,15 @@ module.exports.VEvent = class VEvent extends VComponent
 
 
 module.exports.VTimezone = class VTimezone extends VComponent
-    name: 'VTIMEZONE' 
+    name: 'VTIMEZONE'
 
     # constructor: (timezone) ->
     constructor: (startDate, timezone) ->
         super
-        if not startDate # Parsing constructor
-            return
+        # During parsing, VTimezone are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
             
         @fields =
             TZID: timezone
@@ -210,8 +232,10 @@ module.exports.VStandard = class VStandard extends VComponent
 
     constructor: (startDate, startShift, endShift) ->
         super
-        if not startDate # Parsing constructor
-            return
+        # During parsing, VStandard are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
             
         @fields =
             DTSTART: moment(startDate).format VStandard.icalDTFormat
@@ -224,8 +248,10 @@ module.exports.VDaylight = class VDaylight extends VComponent
 
     constructor: (startDate, startShift, endShift) ->
         super
-        if not startDate # Parsing constructor
-            return
+        # During parsing, VDaylight are initialized without any property,
+        # so we skip the processing below
+        if not startDate
+            return @
             
         @fields =
             DTSTART: moment(startDate).format VDaylight.icalDTFormat
@@ -290,7 +316,7 @@ module.exports.ICalParser = class ICalParser
                 component = new VCalendar()
                 result = component
 
-            else if name in Object.keys(ICalParser.components)
+            else if name in Object.keys ICalParser.components
                 component = new ICalParser.components[name]()
 
             else

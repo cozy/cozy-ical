@@ -5,21 +5,27 @@ RRule = require('rrule').RRule
 module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
 
+    # Return VEvent object or undefined if mandatory elements miss.
+    # CAUTION : skip Attendees and EMAIL reminders.
     Event::toIcal = ->
-        # Return undefined if mandatory elements miss.
+        allDay = @start.length is 10
 
-        # Stay in event locale timezone for recurrent events.
-        timezone = 'UTC' # Default for non recurrent events.
-        if @rrule and @timezone
-            timezone = @timezone
-            # CAUTION recurrent event wihtout timezone is invalid.
+        # Stay in event locale timezone for recurring events.
+        timezone = 'UTC' # Default for non recurring events.
+        if @rrule
+            if @timezone?
+                timezone = @timezone
+
+            else if not allDay
+                console.log "Recurring events need timezone."
+                return undefined
 
         try
             event = new VEvent 
                 moment.tz @start, timezone,
                 moment.tz @end, timezone,
                 @description, @place, @id, @details, 
-                @start.length is 10, # allDay
+                allDay,
                 @rrule, @timezone
         catch e then return undefined # all those elements are mandatory.
  
@@ -31,9 +37,8 @@ module.exports = (Event) ->
 
         return event
 
+    # Return a valid Event object, or undefined.
     Event.fromIcal = (vevent) ->
-        # @return a valid Event object, or undefined.
-
         event = new Event()
 
         event.description = vevent.fields["SUMMARY"] or
@@ -83,9 +88,15 @@ module.exports = (Event) ->
             try # RRule may fail.
                 options = RRule.parseString vevent.fields["RRULE"]
                 if options.freq is RRule.WEEKLY and not options.byweekday
-                    options.byweekday = [[RRule.SU, RRule.MO, RRule.TU, 
-                        RRule.WE,RRule.TH, RRule.FR, 
-                        RRule.SA][moment(event.start).day()]]
+                    options.byweekday = [
+                        [RRule.SU 
+                        RRule.MO 
+                        RRule.TU 
+                        RRule.WE
+                        RRule.TH 
+                        RRule.FR 
+                        RRule.SA][moment(event.start).day()]
+                    ]
 
                 event.rrule = RRule.optionsToString options
 

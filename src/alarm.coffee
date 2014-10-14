@@ -7,13 +7,14 @@ module.exports = (Alarm) ->
     Alarm.getICalCalendar = (name='Cozy Agenda') ->
         calendar = new VCalendar 'Cozy Cloud', name
 
+    # Cozy alarms are VAlarm nested in implicit VTodo,
+    # with trigg is VTodo.DTSTART and VAlarm.trigger is PT0M.
+    # Return VTodo object or undefined if mandatory elements miss.
     Alarm::toIcal = ->
-        # Cozy alarms are VAlarm nested in implicit VTodo,
-        # with trigg is VTodo.DTSTART and VAlarm.trigger is PT0M.
+        
+        # @TODO: If recurrent alarms,
+        # timezone = if @rrule then @timezone else 'GMT'
 
-        # Return undefined if mandatory elements miss.
-
-        # If recurrent alarms : timezone = if @rrule then @timezone else 'GMT'
         timezone = 'GMT' # only UTC.
         try startDate = moment.tz @trigg, timezone
         catch e then return undefined
@@ -25,7 +26,7 @@ module.exports = (Alarm) ->
 
         # else : ignore other actions.
 
-        vtodo
+        return vtodo
 
     Alarm.fromIcal = (vtodo) ->
         alarm = new Alarm()
@@ -52,16 +53,24 @@ module.exports = (Alarm) ->
         if valarms.length is 0 
             return undefined # Only VTodo with VAlarm can be usefull in cozy.
         else
+            # We clean here valarms list, to keep only ones with 
+            # - supported trigger duration,
+            # - supported actions,
+            # Also, handle cozy-specific 'BOTH' action.
+            # Fill the set actions, with filtered actions.
             actions = valarms.reduce (actions, valarm) -> 
-                if actions['BOTH']?
+                if actions['BOTH']? # We already got all actions we can handle.
                     return actions
 
+                # Filter durations uncompatibles with cozy alarm object.
                 if valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M', 'PT0S', '-PT0S', '-PT0H', '-PT0H']
                     return actions
+
+                # Filter action and convert to cozy specific 'BOTH' if needed.
                 action = valarm.fields['ACTION']
 
                 if action is 'DISPLAY'
-                    if actions['EMAIL']
+                    if actions['EMAIL']?
                         actions = 'BOTH': true
                     else
                         actions[action] = true
@@ -72,15 +81,15 @@ module.exports = (Alarm) ->
 
                 return actions
 
-            , {} # initial actions set.
+            , {} # initialize actions set.
+            actions = Object.keys actions # Convert set to array.
 
-            actions = Object.keys actions
             if actions.length is 0
                 return undefined
 
             else alarm.action = actions
 
-        alarm
+        return alarm
 
     Alarm.extractAlarms = (component) ->
         alarms = []
@@ -88,6 +97,5 @@ module.exports = (Alarm) ->
             if component.name is 'VTODO'
                 alarm = Alarm.fromIcal component
                 alarms.push alarm if alarm? # to skip unreadable VTodo.
-                    
 
         return alarms
