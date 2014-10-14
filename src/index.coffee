@@ -10,31 +10,6 @@ module.exports.decorateEvent = require './event'
 #
 # This module is inpired by the icalendar Python module.
 
-
-formatUTCOffset = (startDate, timezone) ->
-    if timezone? and startDate?
-        startDate.setTimezone timezone
-        diff = startDate.getTimezoneOffset() / 6
-        if diff is 0
-            diff = "+0000"
-        else
-            if diff < 0
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 4
-                    diff = "-0#{diff.substring 1, 4}"
-            else
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 3
-                    diff = "+0#{diff.substring 0, 3}"
-                else
-                    diff = "+#{diff.substring(0, 4)}"
-        diff
-    else
-        null
-
-
 # Buffer manager to easily build long string.
 class iCalBuffer
     # TODO Make this buffer streamable
@@ -76,16 +51,8 @@ module.exports.VComponent = class VComponent
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
 
-    formatIcalDate: (date, wholeDay) ->
-        if wholeDay
-          moment(date).format('YYYYMMDD')
-        else
-          moment(date).format('YYYYMMDDTHHmm00')
-
     add: (component) ->
-        # Skipp invalid component
-        if component?
-            @subComponents.push component
+        @subComponents.push component if component? # Skip invalid component
 
     walk: (walker) ->
         walker this
@@ -106,8 +73,8 @@ module.exports.VCalendar = class VCalendar extends VComponent
 
     # Unused 20140918.
     addTimezone: (timezone) -> 
-        if timezone not of @vtimezones
-            @vtimezones[timezone] = new VTimezone(moment(), timezone)
+        if not @vtimezones[timezone]?
+            @vtimezones[timezone] = new VTimezone moment(), timezone
 
     toString: ->
         buf = new iCalBuffer
@@ -132,8 +99,6 @@ module.exports.VAlarm = class VAlarm extends VComponent
             # REPEAT: '0' # Lightning don't like it.
             DESCRIPTION: description
             TRIGGER: trigger
-            # 'TRIGGER;VALUE=DURATION': trigger
-            # "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
 
         if action is 'EMAIL'
             @fields.ATTENDEE = attendee
@@ -149,7 +114,7 @@ module.exports.VTodo = class VTodo extends VComponent
         if not startDate # Parsing constructor
             return
         @fields =
-            DTSTART: startDate.format(VTodo.icalDTUTCFormat)
+            DTSTART: startDate.format VTodo.icalDTUTCFormat
             SUMMARY: summary
             DURATION: 'PT30M'
             UID: uid
@@ -157,7 +122,7 @@ module.exports.VTodo = class VTodo extends VComponent
         @fields.DESCRIPTION = description if description?
 
     addAlarm: (action, description, attendee, summary) ->
-        @add new VAlarm('PT0M', action, description, attendee, summary)
+        @add new VAlarm 'PT0M', action, description, attendee, summary
 
 
 # Additional components not supported yet by Cozy Cloud.
@@ -174,7 +139,6 @@ module.exports.VEvent = class VEvent extends VComponent
             LOCATION:    location
             UID:         uid
 
-        # TODO: DTSTAMP ?
         @fields.DESCRIPTION = description if description?
 
         fieldS = 'DTSTART'
@@ -185,30 +149,28 @@ module.exports.VEvent = class VEvent extends VComponent
         if allDay
             fieldS += ";VALUE=DATE"
             fieldE += ";VALUE=DATE"
-            valueS = startDate.format(VEvent.icalDateFormat)
-            valueE = endDate.format(VEvent.icalDateFormat)
+            valueS = startDate.format VEvent.icalDateFormat
+            valueE = endDate.format VEvent.icalDateFormat
 
         else if rrule
-            # TODO : add the timezone as a VTIMEZONE...
             fieldS += ";TZID=#{timezone}"
-            fieldE += ";TZID=#{ timezone }"
-            valueS = startDate.format(VEvent.icalDTFormat)
-            valueE = endDate.format(VEvent.icalDTFormat)
-
-
-            # @fields['RRULE'] = rrule # Lightning does'nt recognise it.
+            fieldE += ";TZID=#{timezone}"
+            valueS = startDate.format VEvent.icalDTFormat
+            valueE = endDate.format VEvent.icalDTFormat
+            
+            # Lightning can't parse RRULE with DTSTART field in it.
+            # So skip it from the RRULE, which is formated like this :
             # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
-
-            rrule = rrule.split(';').filter((s) -> s.indexOf('DTSTART') != 0).join(';')
+            rrule = rrule.split(';').filter((s) -> s.indexOf('DTSTART') isnt 0
+                ).join ';'
             @fields['RRULE'] = rrule
 
         else # Punctual event.
-            valueS = startDate.format(VEvent.icalDTUTCFormat)
-            valueE = endDate.format(VEvent.icalDTUTCFormat)
+            valueS = startDate.format VEvent.icalDTUTCFormat
+            valueE = endDate.format VEvent.icalDTUTCFormat
 
         @fields[fieldS] = valueS
         @fields[fieldE] = valueE
-
 
 
 module.exports.VTimezone = class VTimezone extends VComponent
@@ -228,7 +190,7 @@ module.exports.VTimezone = class VTimezone extends VComponent
         # zone = moment.tz.zone(timezone)
         # @add new VStandard 
         # startShift and endShift are equal because, actually, only alarm has timezone
-        diff = moment.tz(startDate, timezone).format('ZZ')
+        diff = moment.tz(startDate, timezone).format 'ZZ'
         vstandard = new VStandard startDate, diff, diff
         @add vstandard
         vdaylight = new VDaylight startDate, diff, diff
@@ -252,7 +214,7 @@ module.exports.VStandard = class VStandard extends VComponent
             return
             
         @fields =
-            DTSTART: moment(startDate).format(VStandard.icalDTFormat)
+            DTSTART: moment(startDate).format VStandard.icalDTFormat
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
@@ -266,7 +228,7 @@ module.exports.VDaylight = class VDaylight extends VComponent
             return
             
         @fields =
-            DTSTART: moment(startDate).format(VDaylight.icalDTFormat)
+            DTSTART: moment(startDate).format VDaylight.icalDTFormat
             TZOFFSETFROM: startShift
             TZOFFSETTO: endShift
 
@@ -368,8 +330,9 @@ module.exports.ICalParser = class ICalParser
 
             line = line.toString('utf-8').replace "\r", ''
 
-            # Skip blank lines and a strange behaviour : Empty lines become <Buffer 30> which is '0' ...
-            if line == '' or line == '0' 
+            # Skip blank lines and a strange behaviour : 
+            # empty lines become <Buffer 30> which is '0' .
+            if line is '' or line is '0' 
                 return
 
             if line[0] is ' '

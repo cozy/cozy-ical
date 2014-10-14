@@ -33,7 +33,7 @@
   ],
   "readmeFilename": "README.md",
   "dependencies": {
-    "moment-timezone": "^0.2.2",
+    "moment-timezone": "0.2.2",
     "rrule": "2.1.0",
     "lazy": "1.0.11"
   },
