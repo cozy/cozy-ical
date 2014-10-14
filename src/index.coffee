@@ -338,7 +338,6 @@ module.exports.ICalParser = class ICalParser
             parent?.add component
 
         lineParser = (line) ->
-            lineNumber++
 
             tuple = line.trim().split ':'
 
@@ -365,7 +364,14 @@ module.exports.ICalParser = class ICalParser
                     sendError "Malformed ical file"
 
         lazy(stream).lines.forEach (line) ->
+            lineNumber++
+
             line = line.toString('utf-8').replace "\r", ''
+
+            # Skip blank lines and a strange behaviour : Empty lines become <Buffer 30> which is '0' ...
+            if line == '' or line == '0' 
+                return
+
             if line[0] is ' '
                 completeLine += line.substring 1
             else
