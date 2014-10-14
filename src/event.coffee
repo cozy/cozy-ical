@@ -21,12 +21,16 @@ module.exports = (Event) ->
                 return undefined
 
         try
-            event = new VEvent(
-                moment.tz(@start, timezone),
-                moment.tz(@end, timezone),
-                @description, @place, @id, @details, 
-                allDay,
-                @rrule, @timezone)
+            event = new VEvent
+                    startDate: moment.tz @start, timezone
+                    endDate: moment.tz @end, timezone
+                    summary: @description
+                    location: @place
+                    uid: @id
+                    description: @details
+                    allDay: allDay
+                    rrule: @rrule
+                    timezone: @timezone
         catch e
             console.log 'Can\'t parse event mandatory fields.'
             console.log e
@@ -38,12 +42,13 @@ module.exports = (Event) ->
             
             if @action in ['EMAIL', 'BOTH']
                 # Check attendees list.
-                attendees = @alarmAttendees()
+                attendee = @alarmAttendee()
                 if attendees
-                    event.addAlarm 'EMAIL',
-                        "#{@description} #{@details}",
-                        attendees,
-                        @description
+                    event.addAlarm 
+                        action: 'EMAIL'
+                        description: "#{@description} #{@details}"
+                        attendee: attendee
+                        summary: @description
 
             # else : ignore other actions.
 

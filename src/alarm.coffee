@@ -5,7 +5,7 @@ module.exports = (Alarm) ->
     {VCalendar, VTodo, VAlarm, VTimezone} = require './index'
 
     Alarm.getICalCalendar = (name='Cozy Agenda') ->
-        calendar = new VCalendar 'Cozy Cloud', name
+        calendar = new VCalendar organization: 'Cozy Cloud', title: name
 
     # Cozy alarms are VAlarm nested in implicit VTodo,
     # with trigg is VTodo.DTSTART and VAlarm.trigger is PT0M.
@@ -22,19 +22,20 @@ module.exports = (Alarm) ->
             console.log e
             return undefined
 
-        vtodo = new VTodo startDate, @id, @description
+        vtodo = new VTodo startDate: startDate, id: @id, summary: @description
 
         if @action in ['DISPLAY', 'BOTH']
-            vtodo.addAlarm 'DISPLAY', @description
+            vtodo.addAlarm action: 'DISPLAY', description: @description
 
         if @action in ['EMAIL', 'BOTH']
             # Check attendee list.
             attendee = @attendee()
             if attendee? and attendee.length is 1
-                vtodo.addAlarm 'EMAIL',
-                    "#{@description} #{@details}",
-                    attendee[0],
-                    @description
+                vtodo.addAlarm 
+                    action: 'EMAIL',
+                    description: "#{@description} #{@details}",
+                    attendee: attendee[0],
+                    summary: @description
 
         # else : ignore other actions.
 
@@ -80,7 +81,8 @@ module.exports = (Alarm) ->
                     return actions
 
                 # Filter durations uncompatibles with cozy alarm object.
-                if valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M', 'PT0S', '-PT0S', '-PT0H', '-PT0H']
+                if (valarm.fields['TRIGGER'] not in ['PT0M', '-PT0M', 'PT0S', 
+                    '-PT0S', '-PT0H', '-PT0H'])
                     return actions
 
                 # Filter action and convert to cozy specific 'BOTH' if needed.

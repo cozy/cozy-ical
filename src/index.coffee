@@ -60,15 +60,16 @@ module.exports.VComponent = class VComponent
 
 
 # Calendar component. It's the representation of the root object of a Calendar.
+# @param options { organization, title }
 module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
 
-    constructor: (organization, title) ->
+    constructor: (options) ->
         super
         @fields =
             VERSION: "2.0"
 
-        @fields['PRODID'] = "-//#{organization}//NONSGML #{title}//EN"
+        @fields['PRODID'] = "-//#{options.organization}//NONSGML #{options.title}//EN"
         @vtimezones = {}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
@@ -88,26 +89,27 @@ module.exports.VCalendar = class VCalendar extends VComponent
 # An alarm is there to warn the calendar owner of something. It could be
 # included in an event or in a todo.
 # REPEAT field is ommited, as Lightning don't like the REPEAT: 0 value.
+# @param options { trigger, action, description, attendee, summary }
 module.exports.VAlarm = class VAlarm extends VComponent
     name: 'VALARM'
 
-    constructor: (trigger, action, description, attendee, summary) ->
+    constructor: (options) ->
         super
 
         # During parsing, VAlarm are initialized without any property,
         # so we skip the processing below
-        if not trigger
+        if not options
             return @
         
         @fields =
-            ACTION: action
+            ACTION: options.action
             
-            DESCRIPTION: description
-            TRIGGER: trigger
+            DESCRIPTION: options.description
+            TRIGGER: options.trigger
 
-        if action is 'EMAIL'
-            @fields.ATTENDEE = attendee
-            @fields.SUMMARY = summary
+        if options.action is 'EMAIL'
+            @fields.ATTENDEE = options.attendee
+            @fields.SUMMARY = options.summary
 
 
 # The VTodo is used to described a dated action.
@@ -117,105 +119,112 @@ module.exports.VAlarm = class VAlarm extends VComponent
 # DURATION is a fixed stubbed value of 30 minutes, to avoid infinite tasks in
 # external clients (as lightning).
 # Nested VAlarm ring 0 minutes after (so: at) VTodo DTSTART.
+# @param options {startDate, uid, summary, description }
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (startDate, uid, summary, description) ->
+    constructor: (options) ->
         super
 
         # During parsing, VTodo are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not options
             return @
 
         @fields =
-            DTSTART: startDate.format VTodo.icalDTUTCFormat
-            SUMMARY: summary
+            DTSTART: options.startDate.format VTodo.icalDTUTCFormat
+            SUMMARY: options.summary
             DURATION: 'PT30M' 
-            UID: uid
+            UID: options.uid
 
-        @fields.DESCRIPTION = description if description?
+        if options.description?
+            @fields.DESCRIPTION = options.description 
 
-    addAlarm: (action, description, attendee, summary) ->
-        @add new VAlarm 'PT0M', action, description, attendee, summary
+    # @param options { action, description, attendee, summary }
+    addAlarm: (options) ->
+        options.trigger = 'PT0M'
+        @add new VAlarm options
 
 
 # Additional components not supported yet by Cozy Cloud.
+# @param optiosn { startDate, endDate, summary, location, uid,
+#                  description, allDay, rrule, timezone }
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description, allDay, rrule, timezone) ->
+    constructor: (options) ->
         super
 
         # During parsing, VEvent are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not options
             return @
 
         @fields =
-            SUMMARY:     summary
-            LOCATION:    location
-            UID:         uid
+            SUMMARY:     options.summary
+            LOCATION:    options.location
+            UID:         options.uid
 
-        @fields.DESCRIPTION = description if description?
+        if options.description?
+            @fields.DESCRIPTION = options.description 
 
         fieldS = 'DTSTART'
         fieldE = 'DTEND'
         valueS = null
         valueE = null
 
-        if allDay
+        if options.allDay
             fieldS += ";VALUE=DATE"
             fieldE += ";VALUE=DATE"
-            valueS = startDate.format VEvent.icalDateFormat
-            valueE = endDate.format VEvent.icalDateFormat
+            valueS = options.startDate.format VEvent.icalDateFormat
+            valueE = options.endDate.format VEvent.icalDateFormat
 
-        else if rrule
-            fieldS += ";TZID=#{timezone}"
-            fieldE += ";TZID=#{timezone}"
-            valueS = startDate.format VEvent.icalDTFormat
-            valueE = endDate.format VEvent.icalDTFormat
+        else if options.rrule
+            fieldS += ";TZID=#{options.timezone}"
+            fieldE += ";TZID=#{options.timezone}"
+            valueS = options.startDate.format VEvent.icalDTFormat
+            valueE = options.endDate.format VEvent.icalDTFormat
             
             # Lightning can't parse RRULE with DTSTART field in it.
             # So skip it from the RRULE, which is formated like this :
             # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
-            rrule = rrule.split ';'
+            rrule = options.rrule.split ';'
                    .filter (s) -> s.indexOf('DTSTART') isnt 0
                    .join ';'
 
             @fields['RRULE'] = rrule
 
         else # Punctual event.
-            valueS = startDate.format VEvent.icalDTUTCFormat
-            valueE = endDate.format VEvent.icalDTUTCFormat
+            valueS = options.startDate.format VEvent.icalDTUTCFormat
+            valueE = options.endDate.format VEvent.icalDTUTCFormat
 
         @fields[fieldS] = valueS
         @fields[fieldE] = valueE
 
-
+# @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent
     name: 'VTIMEZONE'
 
     # constructor: (timezone) ->
-    constructor: (startDate, timezone) ->
+    constructor: (options) ->
         super
         # During parsing, VTimezone are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not options
             return @
             
         @fields =
-            TZID: timezone
-            TZURL: "http://tzurl.org/zoneinfo/#{timezone}.ics"
+            TZID: options.timezone
+            TZURL: "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
 
 
         # zone = moment.tz.zone(timezone)
         # @add new VStandard 
         # startShift and endShift are equal because, actually, only alarm has timezone
-        diff = moment.tz(startDate, timezone).format 'ZZ'
-        vstandard = new VStandard startDate, diff, diff
+        diff = moment.tz(options.startDate, options.timezone).format 'ZZ'
+        vstandard = new VStandard options.startDate, diff, diff
         @add vstandard
-        vdaylight = new VDaylight startDate, diff, diff
+        vdaylight = new VDaylight options.startDate, diff, diff
         @add vdaylight
 
 
@@ -226,37 +235,37 @@ module.exports.VJournal = class VJournal extends VComponent
 module.exports.VFreeBusy = class VFreeBusy extends VComponent
     name: 'VFREEBUSY'
 
-
+# @param options { startDate, startShift, endShift }
 module.exports.VStandard = class VStandard extends VComponent
     name: 'STANDARD'
 
-    constructor: (startDate, startShift, endShift) ->
+    constructor: (options) ->
         super
         # During parsing, VStandard are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not options
             return @
             
         @fields =
-            DTSTART: moment(startDate).format VStandard.icalDTFormat
-            TZOFFSETFROM: startShift
-            TZOFFSETTO: endShift
+            DTSTART: moment(options.startDate).format VStandard.icalDTFormat
+            TZOFFSETFROM: options.startShift
+            TZOFFSETTO: options.endShift
 
-
+# @param options { startDate, startShift, endShift }
 module.exports.VDaylight = class VDaylight extends VComponent
     name: 'DAYLIGHT'
 
-    constructor: (startDate, startShift, endShift) ->
+    constructor: (options) ->
         super
         # During parsing, VDaylight are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not options
             return @
             
         @fields =
-            DTSTART: moment(startDate).format VDaylight.icalDTFormat
-            TZOFFSETFROM: startShift
-            TZOFFSETTO: endShift
+            DTSTART: moment(options.startDate).format VDaylight.icalDTFormat
+            TZOFFSETFROM: options.startShift
+            TZOFFSETTO: options.endShift
 
 
 module.exports.ICalParser = class ICalParser
