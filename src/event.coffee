@@ -21,17 +21,29 @@ module.exports = (Event) ->
                 return undefined
 
         try
-            event = new VEvent 
-                moment.tz @start, timezone,
-                moment.tz @end, timezone,
+            event = new VEvent(
+                moment.tz(@start, timezone),
+                moment.tz(@end, timezone),
                 @description, @place, @id, @details, 
                 allDay,
-                @rrule, @timezone
-        catch e then return undefined # all those elements are mandatory.
+                @rrule, @timezone)
+        catch e
+            console.log 'Can\'t parse event mandatory fields.'
+            console.log e
+            return undefined # all those elements are mandatory.
  
         @alarms?.forEach (alarm) =>
             if alarm.action in ['DISPLAY', 'BOTH']
                 event.add new VAlarm alarm.trigg, 'DISPLAY', @description
+            
+            if @action in ['EMAIL', 'BOTH']
+                # Check attendees list.
+                attendees = @alarmAttendees()
+                if attendees
+                    event.addAlarm 'EMAIL',
+                        "#{@description} #{@details}",
+                        attendees,
+                        @description
 
             # else : ignore other actions.
 
@@ -44,6 +56,7 @@ module.exports = (Event) ->
         event.description = vevent.fields["SUMMARY"] or
                             vevent.fields["DESCRIPTION"]
         if not event.description
+            console.log 'No event.description from iCal.'
             return undefined
 
         event.details = vevent.fields["DESCRIPTION"] or
@@ -82,7 +95,10 @@ module.exports = (Event) ->
                     event.start = start.toISOString()
                     event.end = end.toISOString()
 
-        catch e then return undefined
+        catch e
+            console.log 'event.start and event.end are required from //
+            iCal'
+            return undefined
 
         if vevent.fields['RRULE']?
             try # RRule may fail.
@@ -100,7 +116,7 @@ module.exports = (Event) ->
 
                 event.rrule = RRule.optionsToString options
 
-            catch e then # skip rrule on errors.
+            catch e # skip rrule on errors.
                 console.log "Fail RRULE parsing"
                 console.log e
 

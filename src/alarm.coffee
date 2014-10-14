@@ -17,12 +17,24 @@ module.exports = (Alarm) ->
 
         timezone = 'GMT' # only UTC.
         try startDate = moment.tz @trigg, timezone
-        catch e then return undefined
+        catch e 
+            console.log 'Can\'t parse alarm.trigg field.'
+            console.log e
+            return undefined
 
         vtodo = new VTodo startDate, @id, @description
 
         if @action in ['DISPLAY', 'BOTH']
             vtodo.addAlarm 'DISPLAY', @description
+
+        if @action in ['EMAIL', 'BOTH']
+            # Check attendee list.
+            attendee = @attendee()
+            if attendee? and attendee.length is 1
+                vtodo.addAlarm 'EMAIL',
+                    "#{@description} #{@details}",
+                    attendee[0],
+                    @description
 
         # else : ignore other actions.
 
@@ -34,6 +46,7 @@ module.exports = (Alarm) ->
         alarm.description = vtodo.fields["SUMMARY"] or
                             vtodo.fields["DESCRIPTION"]
         if not alarm.description
+            console.log 'No alarm.description from iCal.'
             return undefined
 
         try # .trigg is required.
@@ -46,12 +59,16 @@ module.exports = (Alarm) ->
             else
                 alarm.trigg = moment(vtodo.fields['DTSTART'], VAlarm.icalDTUTCFormat).toISOString()
         catch e
+            console.log 'Can\'t construct alarm.trigg from iCal.'
             console.log e
             return undefined
 
         valarms = vtodo.subComponents.filter (c) -> c.name is 'VALARM'
-        if valarms.length is 0 
-            return undefined # Only VTodo with VAlarm can be usefull in cozy.
+        if valarms.length is 0
+            # Only VTodo with VAlarm can be usefull in cozy.
+            console.log 'iCal VTodo hasn\'t VAlarm.'
+            return undefined
+
         else
             # We clean here valarms list, to keep only ones with 
             # - supported trigger duration,
@@ -85,6 +102,7 @@ module.exports = (Alarm) ->
             actions = Object.keys actions # Convert set to array.
 
             if actions.length is 0
+                console.log 'iCal VTodo hasn\'t alarm compatibles.'
                 return undefined
 
             else alarm.action = actions

@@ -96,7 +96,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
         # During parsing, VAlarm are initialized without any property,
         # so we skip the processing below
-        if not startDate
+        if not trigger
             return @
         
         @fields =
@@ -180,7 +180,7 @@ module.exports.VEvent = class VEvent extends VComponent
             # So skip it from the RRULE, which is formated like this :
             # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
             rrule = rrule.split ';'
-                   .filter((s) -> s.indexOf('DTSTART') isnt 0
+                   .filter (s) -> s.indexOf('DTSTART') isnt 0
                    .join ';'
 
             @fields['RRULE'] = rrule
