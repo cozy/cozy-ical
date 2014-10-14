@@ -64,8 +64,14 @@ module.exports.VComponent = class VComponent
 module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
 
+
+
     constructor: (options) ->
         super
+        # During parsing, VAlarm are initialized without any property,
+        # so we skip the processing below
+        return @ if not options
+        
         @fields =
             VERSION: "2.0"
 

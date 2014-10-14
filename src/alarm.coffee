@@ -29,12 +29,11 @@ module.exports = (Alarm) ->
 
         if @action in ['EMAIL', 'BOTH']
             # Check attendee list.
-            attendee = @attendee()
-            if attendee? and attendee.length is 1
+            if @attendee?
                 vtodo.addAlarm 
                     action: 'EMAIL',
                     description: "#{@description} #{@details}",
-                    attendee: attendee[0],
+                    attendee: @attendee()[0],
                     summary: @description
 
         # else : ignore other actions.

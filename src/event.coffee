@@ -42,12 +42,11 @@ module.exports = (Event) ->
             
             if @action in ['EMAIL', 'BOTH']
                 # Check attendees list.
-                attendee = @alarmAttendee()
-                if attendees
+                if @alarmAttendee?
                     event.addAlarm 
                         action: 'EMAIL'
                         description: "#{@description} #{@details}"
-                        attendee: attendee
+                        attendee: @alarmAttendee()[0]
                         summary: @description
 
             # else : ignore other actions.
