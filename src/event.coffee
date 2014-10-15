@@ -38,15 +38,18 @@ module.exports = (Event) ->
  
         @alarms?.forEach (alarm) =>
             if alarm.action in ['DISPLAY', 'BOTH']
-                event.add new VAlarm alarm.trigg, 'DISPLAY', @description
+                event.add new VAlarm 
+                    trigger: alarm.trigg
+                    action: 'DISPLAY'
+                    description: @description
             
-            if @action in ['EMAIL', 'BOTH']
-                # Check attendees list.
-                if @alarmAttendee?
-                    event.addAlarm 
+            if alarm.action in ['EMAIL', 'BOTH'] and @getAlarmAttendeesEmail?
+                @getAlarmAttendeesEmail().forEach (email) =>
+                    event.add new VAlarm
+                        trigger: alarm.trigg 
                         action: 'EMAIL'
-                        description: "#{@description} #{@details}"
-                        attendee: @alarmAttendee()[0]
+                        description: "#{@description} " + (@details or '')
+                        attendee: "mailto:#{email}"
                         summary: @description
 
             # else : ignore other actions.

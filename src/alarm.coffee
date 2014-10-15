@@ -27,13 +27,12 @@ module.exports = (Alarm) ->
         if @action in ['DISPLAY', 'BOTH']
             vtodo.addAlarm action: 'DISPLAY', description: @description
 
-        if @action in ['EMAIL', 'BOTH']
-            # Check attendee list.
-            if @attendee?
+        if @action in ['EMAIL', 'BOTH'] and @getAttendeesEmail?
+            @getAttendeesEmail().forEach (email) =>
                 vtodo.addAlarm 
-                    action: 'EMAIL',
-                    description: "#{@description} #{@details}",
-                    attendee: @attendee()[0],
+                    action: 'EMAIL'
+                    description: "#{@description} " + (@details or '')
+                    attendee: "mailto:#{email}"
                     summary: @description
 
         # else : ignore other actions.
