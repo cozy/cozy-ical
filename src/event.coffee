@@ -110,17 +110,6 @@ module.exports = (Event) ->
         if vevent.fields['RRULE']?
             try # RRule may fail.
                 options = RRule.parseString vevent.fields["RRULE"]
-                if options.freq is RRule.WEEKLY and not options.byweekday
-                    options.byweekday = [
-                        [RRule.SU 
-                        RRule.MO 
-                        RRule.TU 
-                        RRule.WE
-                        RRule.TH 
-                        RRule.FR 
-                        RRule.SA][moment(event.start).day()]
-                    ]
-
                 event.rrule = RRule.optionsToString options
 
             catch e # skip rrule on errors.
