@@ -176,23 +176,19 @@ module.exports.VEvent = class VEvent extends VComponent
 
             fieldS = 'DTSTART'
             fieldE = 'DTEND'
-            valueS = null
-            valueE = null
-
-            options.startDate = moment options.startDate
-            options.endDate = moment options.endDate
+            formatS = null
+            formatE = null
+            tzS = null
+            tzE = null
 
             if options.allDay
                 fieldS += ";VALUE=DATE"
                 fieldE += ";VALUE=DATE"
-                valueS = options.startDate.format VEvent.icalDateFormat
-                valueE = options.endDate.format VEvent.icalDateFormat
+                formatS = formatE = VEvent.icalDateFormat
 
             else if options.rrule
-                fieldS += ";TZID=#{options.timezone}"
-                fieldE += ";TZID=#{options.timezone}"
-                valueS = options.startDate.format VEvent.icalDTFormat
-                valueE = options.endDate.format VEvent.icalDTFormat
+                formatS = formatE = VEvent.icalDTFormat
+                tzS = tzE = options.timezone
 
                 # Lightning can't parse RRULE with DTSTART field in it.
                 # So skip it from the RRULE, which is formated like this :
@@ -204,11 +200,27 @@ module.exports.VEvent = class VEvent extends VComponent
                 @fields['RRULE'] = rrule
 
             else # Punctual event.
-                valueS = options.startDate.format VEvent.icalDTUTCFormat
-                valueE = options.endDate.format VEvent.icalDTUTCFormat
+                if options.timezone
+                    formatS = formatE = VEvent.icalDTFormat
+                    tzS = tzE = options.timezone
+                else
+                    if options.startDate.getTimezone?
+                        formatS = VEvent.icalDTFormat
+                        tzS = options.startDate.getTimezone()
+                    else
+                        formatS = VEvent.icalDTUTCFormat
 
-            @fields[fieldS] = valueS
-            @fields[fieldE] = valueE
+                    if options.endDate.getTimezone?
+                        formatE = VEvent.icalDTFormat
+                        tzE = options.startDate.getTimezone()
+                    else
+                        formatE = VEvent.icalDTUTCFormat
+
+            (fieldS += ";TZID=#{tzS}") if tzS
+            (fieldE += ";TZID=#{tzE}") if tzE
+
+            @fields[fieldS] = (moment options.startDate).format formatS
+            @fields[fieldE] = (moment options.endDate).format formatE
 
 
 # @param options { startDate, timezone }
