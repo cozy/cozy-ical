@@ -174,11 +174,12 @@ describe "Calendar export/import", ->
                     PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
                     BEGIN:VTODO
                     SUMMARY:this is a title
+                    DTSTART:20130609T150000Z
                     UID:3615
                     BEGIN:VALARM
                     ACTION:DISPLAY
                     REPEAT:1
-                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
+                    TRIGGER:PT0M
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR
@@ -191,8 +192,7 @@ describe "Calendar export/import", ->
 
             it 'and Alarm::toIcal()', ->
                 ical = @alarm.toIcal()
-                ical.fields['SUMMARY'].should.equal ical.fields['DESCRIPTION']
-
+                ical.fields['SUMMARY'].should.equal @alarm.description
 
             it 'should add Event.extractEvents', (done) ->
 
@@ -202,11 +202,11 @@ describe "Calendar export/import", ->
                     @event = events[1]
                     # @event.timezone.should.equal 'Europe/Paris'
                     @event.description.should.equal 'Un événement'
-                    @event.start.should.equal 'Tue Jul 30 2013 12:30:00' # UTC
+                    @event.start.should.equal '2013-07-30T12:30:00.000Z'
                     should.exist @event.details
 
                     event2 = events[0]
-                    event2.start.should.equal 'Wed Jul 31 2013 16:00:00' # UTC
+                    event2.start.should.equal '2013-07-31T16:00:00+00:00'
                     should.exist event2.rrule
                     done()
 
