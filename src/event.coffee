@@ -22,31 +22,31 @@ module.exports = (Event) ->
 
         try
             event = new VEvent
-                    startDate: moment.tz @start, timezone
-                    endDate: moment.tz @end, timezone
-                    summary: @description
-                    location: @place
-                    uid: @id
-                    description: @details
-                    allDay: allDay
-                    rrule: @rrule
-                    timezone: @timezone
+                startDate: moment.tz @start, timezone
+                endDate: moment.tz @end, timezone
+                summary: @description
+                location: @place
+                uid: @id
+                description: @details
+                allDay: allDay
+                rrule: @rrule
+                timezone: @timezone
         catch e
             console.log 'Can\'t parse event mandatory fields.'
             console.log e
             return undefined # all those elements are mandatory.
- 
+
         @alarms?.forEach (alarm) =>
             if alarm.action in ['DISPLAY', 'BOTH']
-                event.add new VAlarm 
+                event.add new VAlarm
                     trigger: alarm.trigg
                     action: 'DISPLAY'
                     description: @description
-            
+
             if alarm.action in ['EMAIL', 'BOTH'] and @getAlarmAttendeesEmail?
                 @getAlarmAttendeesEmail().forEach (email) =>
                     event.add new VAlarm
-                        trigger: alarm.trigg 
+                        trigger: alarm.trigg
                         action: 'EMAIL'
                         description: "#{@description} " + (@details or '')
                         attendee: "mailto:#{email}"
@@ -68,31 +68,48 @@ module.exports = (Event) ->
 
         event.details = vevent.fields["DESCRIPTION"] or
                             vevent.fields["SUMMARY"]
-
         event.place = vevent.fields["LOCATION"]
-
         rruleStr = vevent.fields["RRULE"]
         event.rrule = vevent.fields["RRULE"]
 
-        
-
         try # .start and .end are required.
             if vevent.fields['DTSTART-VALUE'] is 'DATE'
-                event.start = moment.tz(vevent.fields['DTSTART'], VEvent.icalDateFormat, 'GMT').format Event.dateFormat
-                event.end = moment.tz(vevent.fields['DTEND'], VEvent.icalDateFormat, 'GMT').format Event.dateFormat
+                event.start = moment.tz(
+                    vevent.fields['DTSTART'],
+                    VEvent.icalDateFormat, 'GMT'
+                ).format Event.dateFormat
+                event.end = moment.tz(
+                    vevent.fields['DTEND'],
+                    VEvent.icalDateFormat, 'GMT'
+                ).format Event.dateFormat
 
-            else 
+            else
                 timezone = vevent.fields['DTSTART-TZID']
-                timezone = 'UTC' unless timezones[timezone] # Filter by timezone list.
-                
+                # Filter by timezone list.
+                timezone = 'UTC' unless timezones[timezone]
+
                 if timezone isnt 'UTC'
-                    start = moment.tz vevent.fields['DTSTART'], VEvent.icalDTFormat, timezone
-                    end = moment.tz vevent.fields['DTEND'], VEvent.icalDTFormat, timezone
+                    start = moment.tz(
+                        vevent.fields['DTSTART'],
+                        VEvent.icalDTFormat,
+                        timezone
+                    )
+                    end = moment.tz(
+                        vevent.fields['DTEND'],
+                        VEvent.icalDTFormat,
+                        timezone
+                    )
 
                 else
-                    start = moment.tz vevent.fields['DTSTART'], VEvent.icalDTUTCFormat, 'UTC'
-                    end = moment.tz vevent.fields['DTEND'], VEvent.icalDTUTCFormat, 'UTC'
-                
+                    start = moment.tz(
+                        vevent.fields['DTSTART'],
+                        VEvent.icalDTUTCFormat, 'UTC'
+                    )
+                    end = moment.tz(
+                        vevent.fields['DTEND'],
+                        VEvent.icalDTUTCFormat, 'UTC'
+                    )
+
                 # Format, only RRule doesn't use UTC
                 if vevent.fields['RRULE']?
                     event.timezone = timezone
@@ -117,18 +134,21 @@ module.exports = (Event) ->
                 console.log e
 
         # Alarms reminders.
-        alarms = [] 
+        alarms = []
         vevent.subComponents.forEach (c) ->
             if c.name is not 'VALARM'
                 return
 
             trigg = c.fields['TRIGGER']
             action = c.fields['ACTION']
-            if (trigg and trigg.match(Event.alarmTriggRegex) and action in ['EMAIL', 'DISPLAY'])
+            if (trigg and \
+                trigg.match(Event.alarmTriggRegex) and \
+                action in ['EMAIL', 'DISPLAY'])
+
                 alarms.push trigg: trigg, action: action
-        
-        event.alarms = alarms if alarms 
-        
+
+        event.alarms = alarms if alarms
+
         return event
 
     Event.extractEvents = (component) ->

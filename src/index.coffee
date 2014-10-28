@@ -10,6 +10,7 @@ module.exports.decorateEvent = require './event'
 #
 # This module is inpired by the icalendar Python module.
 
+
 # Buffer manager to easily build long string.
 class iCalBuffer
     # TODO Make this buffer streamable
@@ -64,23 +65,22 @@ module.exports.VComponent = class VComponent
 module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
 
-
-
     constructor: (options) ->
         super
         # During parsing, VAlarm are initialized without any property,
         # so we skip the processing below
         return @ if not options
-        
+
         @fields =
             VERSION: "2.0"
 
-        @fields['PRODID'] = "-//#{options.organization}//NONSGML #{options.title}//EN"
+        @fields['PRODID'] = \
+            "-//#{options.organization}//NONSGML #{options.title}//EN"
         @vtimezones = {}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
     # anyway to support them if necessary in future"
-    addTimezone: (timezone) -> 
+    addTimezone: (timezone) ->
         if not @vtimezones[timezone]?
             @vtimezones[timezone] = new VTimezone moment(), timezone
 
@@ -91,6 +91,7 @@ module.exports.VCalendar = class VCalendar extends VComponent
         buf.addLine vtimezone.toString() for _,vtimezone of @vtimezones
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
+
 
 # An alarm is there to warn the calendar owner of something. It could be
 # included in an event or in a todo.
@@ -106,10 +107,10 @@ module.exports.VAlarm = class VAlarm extends VComponent
         # so we skip the processing below
         if not options
             return @
-        
+
         @fields =
             ACTION: options.action
-            
+
             DESCRIPTION: options.description
             TRIGGER: options.trigger
 
@@ -120,8 +121,8 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
 # The VTodo is used to described a dated action.
 #
-# cozy's alarm use VTodo to carry VAlarm. The VTodo handle the alarm datetime 
-# on it's DTSTART field. 
+# cozy's alarm use VTodo to carry VAlarm. The VTodo handle the alarm datetime
+# on it's DTSTART field.
 # DURATION is a fixed stubbed value of 30 minutes, to avoid infinite tasks in
 # external clients (as lightning).
 # Nested VAlarm ring 0 minutes after (so: at) VTodo DTSTART.
@@ -140,11 +141,11 @@ module.exports.VTodo = class VTodo extends VComponent
         @fields =
             DTSTART: options.startDate.format VTodo.icalDTUTCFormat
             SUMMARY: options.summary
-            DURATION: 'PT30M' 
+            DURATION: 'PT30M'
             UID: options.uid
 
         if options.description?
-            @fields.DESCRIPTION = options.description 
+            @fields.DESCRIPTION = options.description
 
     # @param options { action, description, attendee, summary }
     addAlarm: (options) ->
@@ -152,8 +153,7 @@ module.exports.VTodo = class VTodo extends VComponent
         @add new VAlarm options
 
 
-# Additional components not supported yet by Cozy Cloud.
-# @param optiosn { startDate, endDate, summary, location, uid,
+# @param options { startDate, endDate, summary, location, uid,
 #                  description, allDay, rrule, timezone }
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
@@ -172,7 +172,7 @@ module.exports.VEvent = class VEvent extends VComponent
             UID:         options.uid
 
         if options.description?
-            @fields.DESCRIPTION = options.description 
+            @fields.DESCRIPTION = options.description
 
         fieldS = 'DTSTART'
         fieldE = 'DTEND'
@@ -190,7 +190,7 @@ module.exports.VEvent = class VEvent extends VComponent
             fieldE += ";TZID=#{options.timezone}"
             valueS = options.startDate.format VEvent.icalDTFormat
             valueE = options.endDate.format VEvent.icalDTFormat
-            
+
             # Lightning can't parse RRULE with DTSTART field in it.
             # So skip it from the RRULE, which is formated like this :
             # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
@@ -207,6 +207,7 @@ module.exports.VEvent = class VEvent extends VComponent
         @fields[fieldS] = valueS
         @fields[fieldE] = valueE
 
+
 # @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent
     name: 'VTIMEZONE'
@@ -218,14 +219,14 @@ module.exports.VTimezone = class VTimezone extends VComponent
         # so we skip the processing below
         if not options
             return @
-            
+
         @fields =
             TZID: options.timezone
             TZURL: "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
 
 
         # zone = moment.tz.zone(timezone)
-        # @add new VStandard 
+        # @add new VStandard
         # startShift and endShift are equal because, actually, only alarm has timezone
         diff = moment.tz(options.startDate, options.timezone).format 'ZZ'
         vstandard = new VStandard options.startDate, diff, diff
@@ -234,12 +235,15 @@ module.exports.VTimezone = class VTimezone extends VComponent
         @add vdaylight
 
 
+# Additional components not supported yet by Cozy Cloud.
+
 module.exports.VJournal = class VJournal extends VComponent
     name: 'VJOURNAL'
 
 
 module.exports.VFreeBusy = class VFreeBusy extends VComponent
     name: 'VFREEBUSY'
+
 
 # @param options { startDate, startShift, endShift }
 module.exports.VStandard = class VStandard extends VComponent
@@ -251,11 +255,12 @@ module.exports.VStandard = class VStandard extends VComponent
         # so we skip the processing below
         if not options
             return @
-            
+
         @fields =
             DTSTART: moment(options.startDate).format VStandard.icalDTFormat
             TZOFFSETFROM: options.startShift
             TZOFFSETTO: options.endShift
+
 
 # @param options { startDate, startShift, endShift }
 module.exports.VDaylight = class VDaylight extends VComponent
@@ -267,7 +272,7 @@ module.exports.VDaylight = class VDaylight extends VComponent
         # so we skip the processing below
         if not options
             return @
-            
+
         @fields =
             DTSTART: moment(options.startDate).format VDaylight.icalDTFormat
             TZOFFSETFROM: options.startShift
@@ -327,7 +332,7 @@ module.exports.ICalParser = class ICalParser
 
             if name is "VCALENDAR"
                 if result.fields?
-                    sendError "Cannot import more than one calendar"
+                    sendError "Cannot parse more than one calendar"
                 component = new VCalendar()
                 result = component
 
@@ -371,9 +376,9 @@ module.exports.ICalParser = class ICalParser
 
             line = line.toString('utf-8').replace "\r", ''
 
-            # Skip blank lines and a strange behaviour : 
+            # Skip blank lines and a strange behaviour :
             # empty lines become <Buffer 30> which is '0' .
-            if line is '' or line is '0' 
+            if line is '' or line is '0'
                 return
 
             if line[0] is ' '
