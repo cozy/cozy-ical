@@ -141,10 +141,9 @@ module.exports = (Event) ->
 
             trigg = c.fields['TRIGGER']
             action = c.fields['ACTION']
-            if (trigg and \
-                trigg.match(Event.alarmTriggRegex) and \
-                action in ['EMAIL', 'DISPLAY'])
+            isEmailAction = action in ['EMAIL', 'DISPLAY']
 
+            if trigg and trigg.match(Event.alarmTriggRegex) and isEmailAction
                 alarms.push trigg: trigg, action: action
 
         event.alarms = alarms if alarms
