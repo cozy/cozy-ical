@@ -9,7 +9,7 @@ Status](https://travis-ci.org/aenario/cozy-ical.png?branch=master)](https://trav
 *cozy-ical* is a simple library to deal with the iCal format. It makes life
 easier to parse iCal files and to build them.
 
-## Warning: API breaks whith the 1.0.0 version
+## Warning: API backward-compatibilty breaks with the 1.0.0 version
 
 With 1.0.0 version every component of Cozy-Ical parameters of
 components construction must be given through an option object. See example
