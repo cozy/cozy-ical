@@ -9,6 +9,12 @@ Status](https://travis-ci.org/aenario/cozy-ical.png?branch=master)](https://trav
 *cozy-ical* is a simple library to deal with the iCal format. It makes life
 easier to parse iCal files and to build them.
 
+## Warning: API breaks whith the 1.0.0 version
+
+With 1.0.0 version every component of Cozy-Ical parameters of
+components construction must be given through an option object. See example
+below for details.
+
 ## Usage
 
 ### Build a calendar
@@ -18,14 +24,27 @@ var VCalendar = require('cozy-ical').VCalendar;
 var VEvent = require('cozy-ical').VEvent;
 var VTodo = require('cozy-ical').VTodo;
 
-var cal = new VCalendar('Cozy Cloud', 'Cozy Calendar');
+var cal = new VCalendar({
+  organization: 'Cozy Cloud', 
+  title: 'Cozy Calendar'
+});
 
 var date = new Date(2013, 5, 9, 15, 0, 0);
-var vtodo = new VTodo(date, 'jhon', 'my description');
+var vtodo = new VTodo({
+  startDate: date, 
+  summary: 'jhon', 
+  description: 'my description'
+});
 
 var startDate = new Date(2013, 5, 9, 15, 0, 0);
 var endDate = new Date(2013, 5, 10, 15, 0, 0);
-var vevent = new VEvent(startDate, endDate, "desc", "loc", "3615");
+var vevent = new VEvent({
+  startDate: startDate,
+  endDate: endDate,
+  description: "desc",
+  location:"loc",
+   summary: "3615"
+});
 
 vtodo.addAlarm(date);
 cal.add(vtodo);
