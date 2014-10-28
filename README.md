@@ -42,8 +42,8 @@ var vevent = new VEvent({
   startDate: startDate,
   endDate: endDate,
   description: "desc",
-  location:"loc",
-   summary: "3615"
+  location: "loc",
+  summary: "3615"
 });
 
 vtodo.addAlarm(date);
