@@ -2,6 +2,7 @@ main = require '../lib/index'
 {ICalParser, VCalendar, VAlarm, VTodo, VEvent} = main
 {decorateAlarm, decorateEvent} = main
 should = require 'should'
+moment = require 'should'
 
 helpers = null
 describe "Calendar export/import", ->
@@ -10,7 +11,9 @@ describe "Calendar export/import", ->
 
         describe 'get vCalendar string', ->
             it 'should return default vCalendar string', ->
-                cal = new VCalendar 'Cozy Cloud', 'Cozy Agenda'
+                cal = new VCalendar
+                    organization: 'Cozy Cloud'
+                    title: 'Cozy Agenda'
                 cal.toString().should.equal """
                     BEGIN:VCALENDAR
                     VERSION:2.0
@@ -19,30 +22,32 @@ describe "Calendar export/import", ->
 
         describe 'get vAlarm string', ->
             it 'should return default vAlarm string', ->
-                valarm = new VAlarm '-PT10M',
-                    'DISPLAY', #action
-                    'Wake UP!' # description 
+                valarm = new VAlarm
+                    trigger: '-PT10M'
+                    action: 'DISPLAY'
+                    description: 'Wake UP!' # description
                     # attendee, summary .. ?
 
                 valarm.toString().should.equal """
                     BEGIN:VALARM
                     ACTION:DISPLAY
-                    REPEAT:0
-                    DESCRIPTION:Wake UP!
                     TRIGGER:-PT10M
+                    DESCRIPTION:Wake UP!
                     END:VALARM""".replace(/\n/g, '\r\n')
 
         describe 'get vTodo string', ->
             it 'should return default vTodo string', ->
                 date = new Date 2013, 5, 9, 15, 0, 0
-                vtodo = new VTodo momentTz([2013, 5, 9, 15, 0, 0], 'GMT'),
-                    "3615",  #uid
-                    "ma description" # summary
+                vtodo = new VTodo
+                    startDate: date
+                    uid: "3615",  #uid
+                    summary: "ma description" # summary
                     #description
                 vtodo.toString().should.equal """
                     BEGIN:VTODO
                     DTSTART:20130609T150000Z
                     SUMMARY:ma description
+                    DURATION:PT30M
                     UID:3615
                     END:VTODO""".replace(/\n/g, '\r\n')
 
@@ -50,41 +55,54 @@ describe "Calendar export/import", ->
             it 'should return default vEvent string', ->
                 startDate = new Date 2013, 5, 9, 15, 0, 0
                 endDate = new Date 2013, 5, 10, 15, 0, 0
-                vevent = new VEvent startDate, endDate, "desc", "loc", "3615"
+                vevent = new VEvent
+                    startDate: startDate
+                    endDate: endDate
+                    summary: "desc"
+                    location: "loc"
+                    uid: "3615"
                 vevent.toString().should.equal """
                     BEGIN:VEVENT
                     SUMMARY:desc
                     LOCATION:loc
                     UID:3615
-                    DTSTART;VALUE=DATE-TIME:20130609T150000Z
-                    DTEND;VALUE=DATE-TIME:20130610T150000Z
+                    DTSTART:20130609T150000Z
+                    DTEND:20130610T150000Z
                     END:VEVENT""".replace(/\n/g, '\r\n')
-
-
 
         describe 'get vCalendar with alarms', ->
             it 'should return ical string', ->
                 date = new Date 2013, 5, 9, 15, 0, 0
-                cal = new VCalendar 'Cozy Cloud', 'Cozy Agenda'
-                vtodo = new VTodo date, 'superuser', 'ma description'
-                vtodo.addAlarm date
+
+                cal = new VCalendar
+                    organization: 'Cozy Cloud'
+                    title: 'Cozy Agenda'
+
+                vtodo = new VTodo
+                    startDate: date
+                    uid: 'superuser'
+                    summary: 'ma description'
+                    action: 'DISPLAY'
+                vtodo.addAlarm
+                    startDate: date
+                    action: 'DISPLAY'
+
                 cal.add vtodo
                 cal.toString().should.equal """
                     BEGIN:VCALENDAR
                     VERSION:2.0
                     PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
                     BEGIN:VTODO
-                    DTSTAMP:20130609T150000Z
+                    DTSTART:20130609T150000Z
                     SUMMARY:ma description
+                    DURATION:PT30M
                     UID:superuser
                     BEGIN:VALARM
                     ACTION:DISPLAY
-                    REPEAT:1
-                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
+                    TRIGGER:PT0M
                     END:VALARM
                     END:VTODO
                     END:VCALENDAR""".replace(/\n/g, '\r\n')
-
 
         describe 'parse ical file', ->
 

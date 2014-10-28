@@ -43,7 +43,7 @@ var vevent = new VEvent({
   endDate: endDate,
   description: "desc",
   location: "loc",
-  summary: "3615"
+  uid: "3615"
 });
 
 vtodo.addAlarm(date);

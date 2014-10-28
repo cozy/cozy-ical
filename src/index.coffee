@@ -110,9 +110,10 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
         @fields =
             ACTION: options.action
-
-            DESCRIPTION: options.description
             TRIGGER: options.trigger
+
+        if options.description?
+            @fields.DESCRIPTION = options.description
 
         if options.action is 'EMAIL'
             @fields.ATTENDEE = options.attendee
@@ -135,17 +136,17 @@ module.exports.VTodo = class VTodo extends VComponent
 
         # During parsing, VTodo are initialized without any property,
         # so we skip the processing below
-        if not options
-            return @
+        if options
+            startDate = moment options.startDate
 
-        @fields =
-            DTSTART: options.startDate.format VTodo.icalDTUTCFormat
-            SUMMARY: options.summary
-            DURATION: 'PT30M'
-            UID: options.uid
+            @fields =
+                DTSTART: startDate.format VTodo.icalDTUTCFormat
+                SUMMARY: options.summary
+                DURATION: 'PT30M'
+                UID: options.uid
 
-        if options.description?
-            @fields.DESCRIPTION = options.description
+            if options.description?
+                @fields.DESCRIPTION = options.description
 
     # @param options { action, description, attendee, summary }
     addAlarm: (options) ->
@@ -163,49 +164,51 @@ module.exports.VEvent = class VEvent extends VComponent
 
         # During parsing, VEvent are initialized without any property,
         # so we skip the processing below
-        if not options
-            return @
+        if options
 
-        @fields =
-            SUMMARY:     options.summary
-            LOCATION:    options.location
-            UID:         options.uid
+            @fields =
+                SUMMARY:     options.summary
+                LOCATION:    options.location
+                UID:         options.uid
 
-        if options.description?
-            @fields.DESCRIPTION = options.description
+            if options.description?
+                @fields.DESCRIPTION = options.description
 
-        fieldS = 'DTSTART'
-        fieldE = 'DTEND'
-        valueS = null
-        valueE = null
+            fieldS = 'DTSTART'
+            fieldE = 'DTEND'
+            valueS = null
+            valueE = null
 
-        if options.allDay
-            fieldS += ";VALUE=DATE"
-            fieldE += ";VALUE=DATE"
-            valueS = options.startDate.format VEvent.icalDateFormat
-            valueE = options.endDate.format VEvent.icalDateFormat
+            options.startDate = moment options.startDate
+            options.endDate = moment options.endDate
 
-        else if options.rrule
-            fieldS += ";TZID=#{options.timezone}"
-            fieldE += ";TZID=#{options.timezone}"
-            valueS = options.startDate.format VEvent.icalDTFormat
-            valueE = options.endDate.format VEvent.icalDTFormat
+            if options.allDay
+                fieldS += ";VALUE=DATE"
+                fieldE += ";VALUE=DATE"
+                valueS = options.startDate.format VEvent.icalDateFormat
+                valueE = options.endDate.format VEvent.icalDateFormat
 
-            # Lightning can't parse RRULE with DTSTART field in it.
-            # So skip it from the RRULE, which is formated like this :
-            # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
-            rrule = options.rrule.split ';'
-                   .filter (s) -> s.indexOf('DTSTART') isnt 0
-                   .join ';'
+            else if options.rrule
+                fieldS += ";TZID=#{options.timezone}"
+                fieldE += ";TZID=#{options.timezone}"
+                valueS = options.startDate.format VEvent.icalDTFormat
+                valueE = options.endDate.format VEvent.icalDTFormat
 
-            @fields['RRULE'] = rrule
+                # Lightning can't parse RRULE with DTSTART field in it.
+                # So skip it from the RRULE, which is formated like this :
+                # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
+                rrule = options.rrule.split ';'
+                       .filter (s) -> s.indexOf('DTSTART') isnt 0
+                       .join ';'
 
-        else # Punctual event.
-            valueS = options.startDate.format VEvent.icalDTUTCFormat
-            valueE = options.endDate.format VEvent.icalDTUTCFormat
+                @fields['RRULE'] = rrule
 
-        @fields[fieldS] = valueS
-        @fields[fieldE] = valueE
+            else # Punctual event.
+                valueS = options.startDate.format VEvent.icalDTUTCFormat
+                valueE = options.endDate.format VEvent.icalDTUTCFormat
+
+            @fields[fieldS] = valueS
+            @fields[fieldE] = valueE
 
 
 # @param options { startDate, timezone }
