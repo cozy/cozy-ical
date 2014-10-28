@@ -19,22 +19,29 @@ describe "Calendar export/import", ->
 
         describe 'get vAlarm string', ->
             it 'should return default vAlarm string', ->
-                date = new Date 2013, 5, 9, 15, 0, 0
-                valarm = new VAlarm date
+                valarm = new VAlarm '-PT10M',
+                    'DISPLAY', #action
+                    'Wake UP!' # description 
+                    # attendee, summary .. ?
+
                 valarm.toString().should.equal """
                     BEGIN:VALARM
                     ACTION:DISPLAY
-                    REPEAT:1
-                    TRIGGER;VALUE=DATE-TIME:20130609T150000Z
+                    REPEAT:0
+                    DESCRIPTION:Wake UP!
+                    TRIGGER:-PT10M
                     END:VALARM""".replace(/\n/g, '\r\n')
 
         describe 'get vTodo string', ->
             it 'should return default vTodo string', ->
                 date = new Date 2013, 5, 9, 15, 0, 0
-                vtodo = new VTodo date, "3615", "ma description"
+                vtodo = new VTodo momentTz([2013, 5, 9, 15, 0, 0], 'GMT'),
+                    "3615",  #uid
+                    "ma description" # summary
+                    #description
                 vtodo.toString().should.equal """
                     BEGIN:VTODO
-                    DTSTAMP:20130609T150000Z
+                    DTSTART:20130609T150000Z
                     SUMMARY:ma description
                     UID:3615
                     END:VTODO""".replace(/\n/g, '\r\n')

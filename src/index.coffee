@@ -1,5 +1,5 @@
 fs = require 'fs'
-moment = require 'moment'
+moment = require 'moment-timezone'
 lazy = require 'lazy'
 
 module.exports.decorateAlarm = require './alarm'
@@ -9,31 +9,6 @@ module.exports.decorateEvent = require './event'
 # to obtain explicit JS Objects.
 #
 # This module is inpired by the icalendar Python module.
-
-
-formatUTCOffset = (startDate, timezone) ->
-    if timezone? and startDate?
-        startDate.setTimezone timezone
-        diff = startDate.getTimezoneOffset() / 6
-        if diff is 0
-            diff = "+0000"
-        else
-            if diff < 0
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 4
-                    diff = "-0#{diff.substring 1, 4}"
-            else
-                diff = diff.toString()
-                diff = diff.concat '0'
-                if diff.length is 3
-                    diff = "+0#{diff.substring 0, 3}"
-                else
-                    diff = "+#{diff.substring(0, 4)}"
-        diff
-    else
-        null
-
 
 # Buffer manager to easily build long string.
 class iCalBuffer
@@ -61,6 +36,10 @@ class iCalBuffer
 module.exports.VComponent = class VComponent
     name: 'VCOMPONENT'
 
+    @icalDTUTCFormat: 'YYYYMMDD[T]HHmm[00Z]'
+    @icalDTFormat: 'YYYYMMDDTHHmm[00]'
+    @icalDateFormat: 'YYYYMMDD'
+
     constructor: ->
         @subComponents = []
         @fields = {}
@@ -72,14 +51,8 @@ module.exports.VComponent = class VComponent
         buf.addLine component.toString() for component in @subComponents
         buf.addString "END:#{@name}"
 
-    formatIcalDate: (date, wholeDay) ->
-        if wholeDay
-          moment(date).format('YYYYMMDD')
-        else
-          moment(date).format('YYYYMMDDTHHmm00')
-
     add: (component) ->
-        @subComponents.push component
+        @subComponents.push component if component? # Skip invalid component
 
     walk: (walker) ->
         walker this
@@ -87,82 +60,177 @@ module.exports.VComponent = class VComponent
 
 
 # Calendar component. It's the representation of the root object of a Calendar.
+# @param options { organization, title }
 module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
 
-    constructor: (organization, title) ->
+
+
+    constructor: (options) ->
         super
+        # During parsing, VAlarm are initialized without any property,
+        # so we skip the processing below
+        return @ if not options
+        
         @fields =
             VERSION: "2.0"
 
-        @fields['PRODID'] = "-//#{organization}//NONSGML #{title}//EN"
+        @fields['PRODID'] = "-//#{options.organization}//NONSGML #{options.title}//EN"
+        @vtimezones = {}
 
+    # VTimezone management is not included as of 18/09/2014, but code exists
+    # anyway to support them if necessary in future"
+    addTimezone: (timezone) -> 
+        if not @vtimezones[timezone]?
+            @vtimezones[timezone] = new VTimezone moment(), timezone
+
+    toString: ->
+        buf = new iCalBuffer
+        buf.addLine "BEGIN:#{@name}"
+        buf.addLine "#{att}:#{val}" for att, val of @fields
+        buf.addLine vtimezone.toString() for _,vtimezone of @vtimezones
+        buf.addLine component.toString() for component in @subComponents
+        buf.addString "END:#{@name}"
 
 # An alarm is there to warn the calendar owner of something. It could be
 # included in an event or in a todo.
+# REPEAT field is ommited, as Lightning don't like the REPEAT: 0 value.
+# @param options { trigger, action, description, attendee, summary }
 module.exports.VAlarm = class VAlarm extends VComponent
     name: 'VALARM'
 
-    constructor: (date) ->
+    constructor: (options) ->
         super
+
+        # During parsing, VAlarm are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+        
         @fields =
-            ACTION: 'DISPLAY'
-            REPEAT: '1'
-            "TRIGGER;VALUE=DATE-TIME": @formatIcalDate(date) + 'Z'
+            ACTION: options.action
+            
+            DESCRIPTION: options.description
+            TRIGGER: options.trigger
+
+        if options.action is 'EMAIL'
+            @fields.ATTENDEE = options.attendee
+            @fields.SUMMARY = options.summary
 
 
 # The VTodo is used to described a dated action.
+#
+# cozy's alarm use VTodo to carry VAlarm. The VTodo handle the alarm datetime 
+# on it's DTSTART field. 
+# DURATION is a fixed stubbed value of 30 minutes, to avoid infinite tasks in
+# external clients (as lightning).
+# Nested VAlarm ring 0 minutes after (so: at) VTodo DTSTART.
+# @param options {startDate, uid, summary, description }
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (date, uid, summary, description) ->
+    constructor: (options) ->
         super
+
+        # During parsing, VTodo are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+
         @fields =
-            DTSTAMP: @formatIcalDate(date) + 'Z'
-            SUMMARY: summary
-            UID: uid
+            DTSTART: options.startDate.format VTodo.icalDTUTCFormat
+            SUMMARY: options.summary
+            DURATION: 'PT30M' 
+            UID: options.uid
 
-        @fields.DESCRIPTION = description if description?
+        if options.description?
+            @fields.DESCRIPTION = options.description 
 
-    addAlarm: (date) ->
-        @add new VAlarm date
+    # @param options { action, description, attendee, summary }
+    addAlarm: (options) ->
+        options.trigger = 'PT0M'
+        @add new VAlarm options
 
 
 # Additional components not supported yet by Cozy Cloud.
+# @param optiosn { startDate, endDate, summary, location, uid,
+#                  description, allDay, rrule, timezone }
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (startDate, endDate, summary, location, uid, description, wholeDay) ->
+    constructor: (options) ->
         super
+
+        # During parsing, VEvent are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+
         @fields =
-            SUMMARY:     summary
-            LOCATION:    location
-            UID:         uid
+            SUMMARY:     options.summary
+            LOCATION:    options.location
+            UID:         options.uid
 
-        @fields.DESCRIPTION = description if description?
+        if options.description?
+            @fields.DESCRIPTION = options.description 
 
-        if wholeDay
-           @fields["DTSTART;VALUE=DATE"] = @formatIcalDate startDate, wholeDay
-           @fields["DTEND;VALUE=DATE"] = @formatIcalDate endDate, wholeDay
-        else
-           @fields["DTSTART;VALUE=DATE-TIME"] = "#{@formatIcalDate startDate}Z"
-           @fields["DTEND;VALUE=DATE-TIME"] = "#{@formatIcalDate endDate}Z"
+        fieldS = 'DTSTART'
+        fieldE = 'DTEND'
+        valueS = null
+        valueE = null
 
+        if options.allDay
+            fieldS += ";VALUE=DATE"
+            fieldE += ";VALUE=DATE"
+            valueS = options.startDate.format VEvent.icalDateFormat
+            valueE = options.endDate.format VEvent.icalDateFormat
 
+        else if options.rrule
+            fieldS += ";TZID=#{options.timezone}"
+            fieldE += ";TZID=#{options.timezone}"
+            valueS = options.startDate.format VEvent.icalDTFormat
+            valueE = options.endDate.format VEvent.icalDTFormat
+            
+            # Lightning can't parse RRULE with DTSTART field in it.
+            # So skip it from the RRULE, which is formated like this :
+            # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
+            rrule = options.rrule.split ';'
+                   .filter (s) -> s.indexOf('DTSTART') isnt 0
+                   .join ';'
+
+            @fields['RRULE'] = rrule
+
+        else # Punctual event.
+            valueS = options.startDate.format VEvent.icalDTUTCFormat
+            valueE = options.endDate.format VEvent.icalDTUTCFormat
+
+        @fields[fieldS] = valueS
+        @fields[fieldE] = valueE
+
+# @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent
     name: 'VTIMEZONE'
 
-    constructor: (startDate, timezone) ->
+    # constructor: (timezone) ->
+    constructor: (options) ->
         super
+        # During parsing, VTimezone are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+            
         @fields =
-            TZID: timezone
-            TZURL: "http://tzurl.org/zoneinfo/#{timezone}.ics"
+            TZID: options.timezone
+            TZURL: "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
 
+
+        # zone = moment.tz.zone(timezone)
+        # @add new VStandard 
         # startShift and endShift are equal because, actually, only alarm has timezone
-        diff = formatUTCOffset startDate, timezone
-        vstandard = new VStandard startDate, diff, diff
+        diff = moment.tz(options.startDate, options.timezone).format 'ZZ'
+        vstandard = new VStandard options.startDate, diff, diff
         @add vstandard
-        vdaylight = new VDaylight startDate, diff, diff
+        vdaylight = new VDaylight options.startDate, diff, diff
         @add vdaylight
 
 
@@ -173,27 +241,37 @@ module.exports.VJournal = class VJournal extends VComponent
 module.exports.VFreeBusy = class VFreeBusy extends VComponent
     name: 'VFREEBUSY'
 
-
+# @param options { startDate, startShift, endShift }
 module.exports.VStandard = class VStandard extends VComponent
     name: 'STANDARD'
 
-    constructor: (startDate, startShift, endShift) ->
+    constructor: (options) ->
         super
+        # During parsing, VStandard are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+            
         @fields =
-            DTSTART: @formatIcalDate startDate
-            TZOFFSETFROM: startShift
-            TZOFFSETTO: endShift
+            DTSTART: moment(options.startDate).format VStandard.icalDTFormat
+            TZOFFSETFROM: options.startShift
+            TZOFFSETTO: options.endShift
 
-
+# @param options { startDate, startShift, endShift }
 module.exports.VDaylight = class VDaylight extends VComponent
     name: 'DAYLIGHT'
 
-    constructor: (startDate, startShift, endShift) ->
+    constructor: (options) ->
         super
+        # During parsing, VDaylight are initialized without any property,
+        # so we skip the processing below
+        if not options
+            return @
+            
         @fields =
-            DTSTART: @formatIcalDate startDate
-            TZOFFSETFROM: startShift
-            TZOFFSETTO: endShift
+            DTSTART: moment(options.startDate).format VDaylight.icalDTFormat
+            TZOFFSETFROM: options.startShift
+            TZOFFSETTO: options.endShift
 
 
 module.exports.ICalParser = class ICalParser
@@ -253,7 +331,7 @@ module.exports.ICalParser = class ICalParser
                 component = new VCalendar()
                 result = component
 
-            else if name in Object.keys(ICalParser.components)
+            else if name in Object.keys ICalParser.components
                 component = new ICalParser.components[name]()
 
             else
@@ -263,7 +341,6 @@ module.exports.ICalParser = class ICalParser
             parent?.add component
 
         lineParser = (line) ->
-            lineNumber++
 
             tuple = line.trim().split ':'
 
@@ -290,7 +367,15 @@ module.exports.ICalParser = class ICalParser
                     sendError "Malformed ical file"
 
         lazy(stream).lines.forEach (line) ->
+            lineNumber++
+
             line = line.toString('utf-8').replace "\r", ''
+
+            # Skip blank lines and a strange behaviour : 
+            # empty lines become <Buffer 30> which is '0' .
+            if line is '' or line is '0' 
+                return
+
             if line[0] is ' '
                 completeLine += line.substring 1
             else
