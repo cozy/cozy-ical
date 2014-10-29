@@ -21,8 +21,9 @@
   ],
   "author": "Cozy Cloud <contact@cozycloud.cc> (http://cozycloud.cc)",
   "contributors": [
-    "Romain Foucault",
     "Oleg Elifantiev",
+    "Romain Foucault",
+    "Guillaume Jacquart",
     "Frank Rousseau"
   ],
   "licenses": [
