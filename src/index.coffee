@@ -216,11 +216,11 @@ module.exports.VEvent = class VEvent extends VComponent
                     else
                         formatE = VEvent.icalDTUTCFormat
 
-            (fieldS += ";TZID=#{tzS}") if tzS
-            (fieldE += ";TZID=#{tzE}") if tzE
+            fieldS += ";TZID=#{tzS}" if tzS
+            fieldE += ";TZID=#{tzE}" if tzE
 
-            @fields[fieldS] = (moment options.startDate).format formatS
-            @fields[fieldE] = (moment options.endDate).format formatE
+            @fields[fieldS] = moment(options.startDate).format formatS
+            @fields[fieldE] = moment(options.endDate).format formatE
 
 
 # @param options { startDate, timezone }
