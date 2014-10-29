@@ -178,17 +178,19 @@ module.exports.VEvent = class VEvent extends VComponent
             fieldE = 'DTEND'
             formatS = null
             formatE = null
+            # by default we have no information on timezone for each date
             tzS = null
             tzE = null
 
             if options.allDay
+                # for all day event timezone information is not needed
                 fieldS += ";VALUE=DATE"
                 fieldE += ";VALUE=DATE"
                 formatS = formatE = VEvent.icalDateFormat
 
             else if options.rrule
-                formatS = formatE = VEvent.icalDTFormat
-                tzS = tzE = options.timezone
+                formatS = formatE = VEvent.icalDTFormat # set format (date-time, not trailing Z)
+                tzS = tzE = options.timezone # remember timezone
 
                 # Lightning can't parse RRULE with DTSTART field in it.
                 # So skip it from the RRULE, which is formated like this :
@@ -201,21 +203,27 @@ module.exports.VEvent = class VEvent extends VComponent
 
             else # Punctual event.
                 if options.timezone
-                    formatS = formatE = VEvent.icalDTFormat
-                    tzS = tzE = options.timezone
+                    # if timezone is specified with options
+                    formatS = formatE = VEvent.icalDTFormat # set format (date-time, no trailing Z)
+                    tzS = tzE = options.timezone # remember timezone
                 else
+                    # otherwise, try to get timezone information from Date itself
                     if options.startDate.getTimezone?
+                        # if so, set format and tz name like above
                         formatS = VEvent.icalDTFormat
                         tzS = options.startDate.getTimezone()
                     else
+                        # if there are not tz info - use UTC formatting (date-time with trailing Z)
                         formatS = VEvent.icalDTUTCFormat
 
+                    # repeat for end date ...
                     if options.endDate.getTimezone?
                         formatE = VEvent.icalDTFormat
                         tzE = options.startDate.getTimezone()
                     else
                         formatE = VEvent.icalDTUTCFormat
 
+            # if we have tz information - add it to field names
             fieldS += ";TZID=#{tzS}" if tzS
             fieldE += ";TZID=#{tzE}" if tzE
 
