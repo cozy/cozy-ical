@@ -3,6 +3,7 @@ main = require '../lib/index'
 {decorateAlarm, decorateEvent} = main
 should = require 'should'
 moment = require 'should'
+time = require 'time'
 
 helpers = null
 describe "Calendar export/import", ->
@@ -69,6 +70,90 @@ describe "Calendar export/import", ->
                     DTSTART:20130609T150000Z
                     DTEND:20130610T150000Z
                     END:VEVENT""".replace(/\n/g, '\r\n')
+
+            it 'should support all day event', ->
+                startDate = new Date 2013, 5, 9, 15, 0, 0
+                endDate = new Date 2013, 5, 10, 15, 0, 0
+                vevent = new VEvent
+                    startDate: startDate
+                    endDate: endDate
+                    summary: "desc"
+                    location: "loc"
+                    uid: "3615"
+                    allDay: true
+                vevent.toString().should.equal """
+                    BEGIN:VEVENT
+                    SUMMARY:desc
+                    LOCATION:loc
+                    UID:3615
+                    DTSTART;VALUE=DATE:20130609
+                    DTEND;VALUE=DATE:20130610
+                    END:VEVENT""".replace(/\n/g, '\r\n')
+
+            describe 'timezone support', ->
+
+                it 'should support timezones, set on Date objects', ->
+                    startDate = new time.Date 2013, 5, 9, 15, 0, 0
+                    endDate = new time.Date 2013, 5, 10, 15, 0, 0
+                    startDate.setTimezone 'Europe/Moscow'
+                    endDate.setTimezone 'Europe/Moscow'
+                    vevent = new VEvent
+                        startDate: startDate
+                        endDate: endDate
+                        summary: "desc"
+                        location: "loc"
+                        uid: "3615"
+                    vevent.toString().should.equal """
+                        BEGIN:VEVENT
+                        SUMMARY:desc
+                        LOCATION:loc
+                        UID:3615
+                        DTSTART;TZID=Europe/Moscow:20130609T150000
+                        DTEND;TZID=Europe/Moscow:20130610T150000
+                        END:VEVENT""".replace(/\n/g, '\r\n')
+
+                it 'should support timezones, set via property', ->
+                    startDate = new time.Date 2013, 5, 9, 15, 0, 0
+                    endDate = new time.Date 2013, 5, 10, 15, 0, 0
+                    vevent = new VEvent
+                        startDate: startDate
+                        endDate: endDate
+                        summary: "desc"
+                        location: "loc"
+                        timezone: "Europe/Moscow"
+                        uid: "3615"
+
+                    vevent.toString().should.equal """
+                        BEGIN:VEVENT
+                        SUMMARY:desc
+                        LOCATION:loc
+                        UID:3615
+                        DTSTART;TZID=Europe/Moscow:20130609T150000
+                        DTEND;TZID=Europe/Moscow:20130610T150000
+                        END:VEVENT""".replace(/\n/g, '\r\n')
+
+                it 'should support whole day events with timezones', ->
+                    startDate = new time.Date 2013, 5, 9, 15, 0, 0
+                    endDate = new time.Date 2013, 5, 10, 15, 0, 0
+                    startDate.setTimezone 'Europe/Moscow'
+                    endDate.setTimezone 'Europe/Moscow'
+                    vevent = new VEvent
+                        startDate: startDate
+                        endDate: endDate
+                        summary: "desc"
+                        location: "loc"
+                        timezone: "Europe/Moscow"
+                        uid: "3615"
+                        allDay: true
+                    vevent.toString().should.equal """
+                        BEGIN:VEVENT
+                        SUMMARY:desc
+                        LOCATION:loc
+                        UID:3615
+                        DTSTART;VALUE=DATE:20130609
+                        DTEND;VALUE=DATE:20130610
+                        END:VEVENT""".replace(/\n/g, '\r\n')
+
 
         describe 'get vCalendar with alarms', ->
             it 'should return ical string', ->
