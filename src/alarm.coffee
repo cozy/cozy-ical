@@ -23,7 +23,7 @@ module.exports = (Alarm) ->
 
         vtodo = new VTodo
             startDate: startDate
-            id: @id
+            uid: @id
             summary: @description
 
         if @action in ['DISPLAY', 'BOTH']
