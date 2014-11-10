@@ -1,12 +1,10 @@
 moment = require 'moment-timezone'
-timezones = require './timezones'
 {RRule} = require 'rrule'
 
 module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
 
     # Return VEvent object or undefined if mandatory elements miss.
-    # CAUTION : skip Attendees and EMAIL reminders.
     Event::toIcal = ->
         allDay = @start.length is 10
 
@@ -50,12 +48,14 @@ module.exports = (Event) ->
                     description: @description
 
             if alarm.action in [VAlarm.EMAIL_ACTION, 'BOTH'] and @getAlarmAttendeesEmail?
+                mappedAttendees = @getAlarmAttendeesEmail().map (email) ->
+                    return "mailto:#{email}"
                 event.add new VAlarm
                     trigger: alarm.trigg
                     action: VAlarm.EMAIL_ACTION
                     summary: @description
                     description: @details or ''
-                    attendee: @getAlarmAttendeesEmail()
+                    attendee: mappedAttendees
 
             # else : ignore other actions.
 
@@ -72,6 +72,8 @@ module.exports = (Event) ->
         event.details = model.description or ''
         event.place = model.location
         event.rrule = new RRule(model.rrule).toString()
+        event.attendees = model.attendees
+
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'
                 .format Event.dateFormat

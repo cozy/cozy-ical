@@ -15,7 +15,7 @@ Event = class Event
 
 describe "Cozy models decorator", ->
 
-    source = """
+    globalSource = """
         BEGIN:VCALENDAR
         VERSION:2.0
         PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
@@ -48,7 +48,7 @@ describe "Cozy models decorator", ->
             decorateEvent.bind(null, Event).should.not.throw()
 
         it "::extractEvents should retrieve all the events from the source", (done) ->
-            new ICalParser().parseString source, (err, comp) =>
+            new ICalParser().parseString globalSource, (err, comp) =>
                 should.not.exist err
                 @events = Event.extractEvents comp
                 should.exist @events
@@ -88,12 +88,85 @@ describe "Cozy models decorator", ->
                 END:VEVENT
                 """.replace /\n/g, '\r\n'
 
+        describe "Specific cases", ->
+
+            it "should generate a propery Cozy Event for event with duration", ->
+                source = """
+                BEGIN:VCALENDAR
+                VERSION:2.0
+                PRODID:-//dmfs.org//mimedir.icalendar//EN
+                BEGIN:VEVENT
+                DTSTART;TZID=Europe/Paris:20141111T140000
+                SUMMARY:Recurring
+                RRULE:FREQ=WEEKLY;UNTIL=20141231T130000Z;WKST=MO;BYDAY=TU
+                TRANSP:OPAQUE
+                STATUS:CONFIRMED
+                DURATION:PT1H
+                LAST-MODIFIED:20141110T111600Z
+                DTSTAMP:20141110T111600Z
+                CREATED:20141110T111600Z
+                UID:b4fc5c25-17d7-4849-b06a-af936cc08da8
+                BEGIN:VALARM
+                TRIGGER;VALUE=DURATION:-PT10M
+                ACTION:DISPLAY
+                DESCRIPTION:Default Event Notification
+                X-WR-ALARMUID:d7c56cf9-52b0-4c89-8ba7-292e13cefcaa
+                END:VALARM
+                END:VEVENT
+                END:VCALENDAR"""
+                new ICalParser().parseString source, (err, comp) ->
+                    should.not.exist err
+                    should.exist comp
+                    events = Event.extractEvents comp
+                    events.length.should.equal 1
+                    event = events[0]
+                    event.should.have.property 'start', '2014-11-11T14:00:00'
+                    event.should.have.property 'end', '2014-11-11T15:00:00'
+
+            it "should generate a propery Cozy Event for event with attendees", ->
+                source = """
+                BEGIN:VCALENDAR
+                VERSION:2.0
+                PRODID:-//dmfs.org//mimedir.icalendar//EN
+                BEGIN:VEVENT
+                DTSTART;TZID=Europe/Paris:20141111T140000
+                DESCRIPTION:Party
+                SUMMARY:Attendees
+                TRANSP:OPAQUE
+                STATUS:CONFIRMED
+                ATTENDEE;PARTSTAT=ACCEPTED;RSVP=TRUE;ROLE=REQ-PARTICIPANT:mailto:me@192.168.1
+                 .67
+                ATTENDEE;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;ROLE=REQ-PARTICIPANT:mailto:test@cozy.io
+                DTEND;TZID=Europe/Paris:20141111T200000
+                LAST-MODIFIED:20141110T115555Z
+                DTSTAMP:20141110T115555Z
+                ORGANIZER:mailto:me@192.168.1.67
+                CREATED:20141110T115555Z
+                UID:240673b0-6dc0-4ced-9cec-d0e69e1d7cb5
+                BEGIN:VALARM
+                TRIGGER;VALUE=DURATION:-PT10M
+                ACTION:DISPLAY
+                DESCRIPTION:Default Event Notification
+                X-WR-ALARMUID:5cf3c1d2-17ec-4f70-9309-3180472042d6
+                END:VALARM
+                END:VEVENT
+                END:VCALENDAR"""
+                new ICalParser().parseString source, (err, comp) ->
+                    should.not.exist err
+                    should.exist comp
+                    events = Event.extractEvents comp
+                    events.length.should.equal 1
+                    event = events[0]
+                    event.should.have.property 'attendee'
+                    should.exist event.attendee
+                    event.attendee.length.should.equal 2
+
     describe "Alarm", ->
         it "decorating shouldn't trigger an error", ->
             decorateAlarm.bind(null, Alarm).should.not.throw()
 
         it "::extractAlarms should retrieve all the alarms from the source", (done) ->
-            new ICalParser().parseString source, (err, comp) =>
+            new ICalParser().parseString globalSource, (err, comp) =>
                 should.not.exist err
                 @alarms = Alarm.extractAlarms comp
                 should.exist @alarms

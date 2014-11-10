@@ -76,7 +76,7 @@ describe "vTodo", ->
                 trigger: 'PT30M'
                 summary: 'My super summary'
                 description: 'My super description'
-                attendee: ['random@isp.tld', 'random2@isp2.tld']
+                attendees: ['random@isp.tld', 'random2@isp2.tld']
 
             todo.addAlarm alarmOptions
 

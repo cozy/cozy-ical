@@ -134,13 +134,14 @@ describe "Parse iCal files from scenarios", ->
             model.should.have.property 'rrule'
             model.rrule.should.have.property 'freq'
             model.rrule.freq.should.equal RRule.YEARLY
-            model.should.have.property 'attendee'
+
+            model.should.have.property 'attendees'
             # some providers arbitrarily add the organizer in the attendees list
             # so we can't fix value here
-            model.attendee.length.should.be.within 2, 3
+            model.attendees.length.should.be.within 2, 3
             expectedAtLeast = ['randomgirl@provider.tld', 'randomguy@provider.tld']
             for expected in expectedAtLeast
-                (expected in model.attendee).should.be.ok
+                (expected in model.attendees).should.be.ok
 
     describe "When an iCal file from Lightning is parsed", applyTest 'lightning', 'Mozilla.org', 'Mozilla Calendar V1.1'
     describe "When an iCal file from Apple Calendar is parsed", applyTest 'apple', 'Apple Inc.', 'Mac OS X 10.9.5'

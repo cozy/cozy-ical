@@ -8,6 +8,7 @@ uuid = require 'uuid'
 VALID_TZ_LIST = moment.tz.names()
 
 {MissingFieldError, FieldConflictError, FieldDependencyError, InvalidValueError} = require './errors'
+helpers = require './helpers'
 
 module.exports.decorateAlarm = require './alarm'
 module.exports.decorateEvent = require './event'
@@ -194,8 +195,8 @@ module.exports.VAlarm = class VAlarm extends VComponent
             unless @model.summary?
                 throw new MissingFieldError 'summary'
 
-            unless @model.attendee?
-                throw new MissingFieldError 'attendee'
+            unless @model.attendees?
+                throw new MissingFieldError 'attendees'
 
         else if @model.action is VAlarm.AUDIO_ACTION
             # nothing particular
@@ -212,8 +213,8 @@ module.exports.VAlarm = class VAlarm extends VComponent
         @addRawField 'ACTION', @model.action
         @addRawField 'TRIGGER', @model.trigger
 
-        if @model.attendee
-            for attendee in @model.attendee
+        if @model.attendees
+            for attendee in @model.attendees
                 @addRawField 'ATTENDEE', "mailto:#{attendee}"
         @addRawField 'DESCRIPTION', @model.description
         @addRawField 'DURATION', @model.duration or null
@@ -257,13 +258,13 @@ module.exports.VAlarm = class VAlarm extends VComponent
             unless @model.summary?
                 summary = @parent?.getRawField('SUMMARY')?.value or ''
 
-            unless @model.attendee?
+            unless @model.attendees?
                 attendees = []
 
         @model =
             'action': action
             'trigger': trigger
-            'attendee': attendees
+            'attendees': attendees
             'description': description
             'repeat': @getRawField('REPEAT')?.value or null
             'summary': summary
@@ -336,6 +337,7 @@ module.exports.VTodo = class VTodo extends VComponent
             startDate = moment.tz startDate, VTodo.icalDTUTCFormat, timezone
         else if not startDate? and duration?
             startDate = moment.tz moment(), 'UTC'
+
 
         @model =
             'uid': @getRawField('UID')?.value or uuid.v1()
@@ -448,8 +450,8 @@ module.exports.VEvent = class VEvent extends VComponent
         if @model.endDate?
             @addRawField fieldEnd, moment(@model.endDate).format formatEnd
 
-        if @model.attendee?
-            for attendee in @model.attendee
+        if @model.attendees?
+            for attendee in @model.attendees
                 @addRawField 'ATTENDEE', "mailto:#{attendee}"
 
         @addRawField 'CATEGORIES', @model.categories or null
@@ -480,16 +482,15 @@ module.exports.VEvent = class VEvent extends VComponent
             else
                 timezoneStart = 'UTC'
         else
-            startDate = moment()
+            startDate = moment.tz(moment(), 'UTC').format iCalFormat
             timezoneStart = 'UTC'
 
         dtend = @getRawField 'DTEND'
         endDate = dtend?.value or null
-        duration = @getRawField('duration')?.value or null
+        duration = @getRawField('DURATION')?.value or null
 
         UTCFormat =  'YYYYMMDDTHHmmss[Z]'
         iCalFormat = 'YYYYMMDDTHHmmss'
-
         # can't have both at the same time, drop duration if it's the case
         if endDate? and duration?
             duration = null
@@ -497,6 +498,23 @@ module.exports.VEvent = class VEvent extends VComponent
         # if there is none of them, fallback to default: start+1d
         else if not endDate? and not duration?
             endDate = moment.tz(startDate, iCalFormat, timezoneStart).add(1, 'd').toDate()
+
+        # creates the end end date with the duration added to it
+        else if not endDate? and duration?
+            weeksNum = helpers.iCalDurationToUnitValue duration, 'W'
+            daysNum = helpers.iCalDurationToUnitValue duration, 'D'
+            hoursNum = helpers.iCalDurationToUnitValue duration, 'H'
+            minutesNum = helpers.iCalDurationToUnitValue duration, 'M'
+            secondsNum = helpers.iCalDurationToUnitValue duration, 'S'
+            endDate = moment.tz startDate, iCalFormat, timezoneStart
+            endDate = endDate.add weeksNum, 'w'
+                .add daysNum, 'd'
+                .add hoursNum, 'h'
+                .add minutesNum, 'm'
+                .add secondsNum, 's'
+                .toDate()
+
+            duration = null
 
         # gets end date and its timezone if found
         else if endDate?
@@ -525,7 +543,7 @@ module.exports.VEvent = class VEvent extends VComponent
             'startDate': moment.tz(startDate, iCalFormat, timezoneStart).toDate()
             'endDate': endDate
             'duration': duration
-            'attendee': attendees
+            'attendees': attendees
             'categories': @getRawField('CATEGORIES')?.value or null
             'description': @getRawField('DESCRIPTION')?.value or null
             'location': @getRawField('LOCATION')?.value or null

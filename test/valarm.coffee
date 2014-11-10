@@ -45,7 +45,7 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 description: 'My super description'
                 summary: 'My super summary'
-                attendee: ['random@isp.tld']
+                attendees: ['random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.not.throw()
 
@@ -68,7 +68,7 @@ describe "vAlarm", ->
                 trigger: 'PT30M'
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
-                attendee: ['random@isp.tld']
+                attendees: ['random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.throw MissingFieldError
 
@@ -77,7 +77,7 @@ describe "vAlarm", ->
                 trigger: 'PT30M'
                 action: VAlarm.EMAIL_ACTION
                 description: 'My super description'
-                attendee: ['random@isp.tld']
+                attendees: ['random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.throw MissingFieldError
 
@@ -96,7 +96,7 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
                 description: 'My super description'
-                attendee: ['random@isp.tld']
+                attendees: ['random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.not.throw()
 
@@ -107,15 +107,15 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
                 description: 'My super description'
-                attendee: ['random@isp.tld', 'random2@isp2.tld']
+                attendees: ['random@isp.tld', 'random2@isp2.tld']
             alarm = new VAlarm options
             output = alarm.toString()
             output.should.equal """
                 BEGIN:VALARM
                 ACTION:#{options.action}
                 TRIGGER:#{options.trigger}
-                ATTENDEE:mailto:#{options.attendee[0]}
-                ATTENDEE:mailto:#{options.attendee[1]}
+                ATTENDEE:mailto:#{options.attendees[0]}
+                ATTENDEE:mailto:#{options.attendees[1]}
                 DESCRIPTION:#{options.description}
                 SUMMARY:#{options.summary}
                 END:VALARM""".replace /\n/g, '\r\n'

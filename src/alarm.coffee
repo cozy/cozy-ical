@@ -33,13 +33,14 @@ module.exports = (Alarm) ->
                 trigger: 'PT0M'
 
         if @action in ['EMAIL', 'BOTH'] and @getAttendeesEmail?
-            @getAttendeesEmail().forEach (email) =>
-                vtodo.addAlarm
-                    action: 'EMAIL'
-                    description: @description
-                    attendee: "mailto:#{email}"
-                    summary: @description
-                    trigger: 'PT0M'
+            mappedAttendees = @getAttendeesEmail().map (email) ->
+                    return "mailto:#{email}"
+            vtodo.addAlarm
+                action: 'EMAIL'
+                description: @description
+                attendee: mappedAttendees
+                summary: @description
+                trigger: 'PT0M'
 
         return vtodo
 
