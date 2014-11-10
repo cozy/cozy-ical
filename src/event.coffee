@@ -72,7 +72,8 @@ module.exports = (Event) ->
         event.details = model.description or ''
         event.place = model.location
         event.rrule = new RRule(model.rrule).toString()
-        event.attendees = model.attendees
+        event.attendees = model.attendees?.map (attendee, index) ->
+            return id: index, email: attendee, contactid: null
 
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'

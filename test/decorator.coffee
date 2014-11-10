@@ -43,7 +43,7 @@ describe "Cozy models decorator", ->
         END:VCALENDAR
     """
 
-    describe "Event", ->
+    describe.only "Event", ->
         it "decorating shouldn't trigger an error", ->
             decorateEvent.bind(null, Event).should.not.throw()
 
@@ -157,9 +157,13 @@ describe "Cozy models decorator", ->
                     events = Event.extractEvents comp
                     events.length.should.equal 1
                     event = events[0]
-                    event.should.have.property 'attendee'
-                    should.exist event.attendee
-                    event.attendee.length.should.equal 2
+                    event.should.have.property 'attendees'
+                    should.exist event.attendees
+                    event.attendees.length.should.equal 2
+                    attendee = event.attendees[1]
+                    attendee.should.have.property 'id', 1
+                    attendee.should.have.property 'email', 'test@cozy.io'
+                    attendee.should.have.property 'contactid', null
 
     describe "Alarm", ->
         it "decorating shouldn't trigger an error", ->
