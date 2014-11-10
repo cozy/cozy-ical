@@ -2,9 +2,9 @@
   "name": "cozy-ical",
   "version": "1.0.1",
   "description": "Cozy-Ical provides ICal Parser, generators and helpers",
-  "main": "lib/index",
+  "main": "src/index",
   "scripts": {
-    "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script --colors",
+    "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script/register --colors",
     "build": "coffee -cb --output lib/ src/",
     "prepublish": "npm run build"
   },
@@ -34,14 +34,18 @@
   ],
   "readmeFilename": "README.md",
   "dependencies": {
-    "moment-timezone": "0.2.2",
+    "moment-timezone": "0.2.4",
     "rrule": "2.1.0",
-    "lazy": "1.0.11"
+    "lazy": "1.0.11",
+    "printit": "0.1.3",
+    "extend": "2.0.0",
+    "uuid": "^2.0.1"
   },
   "devDependencies": {
-    "coffee-script": "= 1.4.0",
-    "mocha": "~1.12.0",
-    "should": "~1.2.0",
-    "chai": "~1.7.2"
+    "coffee-script": "1.8.0",
+    "mocha": "2.0.1",
+    "should": "4.1.0",
+    "time": "0.11.0",
+    "coffeelint": "1.6.1"
   }
 }

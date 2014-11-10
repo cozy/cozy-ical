@@ -25,14 +25,14 @@ var VEvent = require('cozy-ical').VEvent;
 var VTodo = require('cozy-ical').VTodo;
 
 var cal = new VCalendar({
-  organization: 'Cozy Cloud', 
+  organization: 'Cozy Cloud',
   title: 'Cozy Calendar'
 });
 
 var date = new Date(2013, 5, 9, 15, 0, 0);
 var vtodo = new VTodo({
-  startDate: date, 
-  summary: 'jhon', 
+  startDate: date,
+  summary: 'jhon',
   description: 'my description'
 });
 
@@ -112,6 +112,68 @@ output:
     VTODO
     my description
 
+## Notes on iCal support
+This library is meant to support all iCal features as defined in [RFC 5545](https://tools.ietf.org/html/rfc5545). Thus it's not fully supporting everything yet, here is the list of unsupported fields:
+
+### vEvent
+* ATTACH
+* CLASS
+* COMMENT
+* CONTACT
+* CREATED
+* EXDATE
+* GEO
+* LAST-MOD
+* PRIORITY
+* RECURRENCE-ID
+* RELATED-TO
+* RESOURCES
+* RDATE
+* RS-STATUS
+* SEQ
+* STATUS
+* TRANSPARENCY
+* URL
+
+### vTodo
+* ATTACH
+* ATTENDEE
+* CATEGORIES
+* CLASS
+* COMMENT
+* CONTACT
+* COMPLETED
+* CREATED
+* DESCRIPTION
+* EXDATE
+* GEO
+* LAST-MOD
+* LOCATION
+* ORGANIZER
+* PRECENT
+* PRIORITY
+* RDATE
+* RECURID
+* RELATED
+* RESOURCES
+* RRULE
+* RSTATUS
+* SEQ
+* STATUS
+* URL
+
+### vAlarm
+* TRIGGER related to END
+
+### vJournal
+* not supported at all
+
+### vFreeBusy
+* not supported at all
+
+### vTimezone
+* not supported at all
+
 ## What is Cozy?
 
 ![Cozy Logo](https://raw.github.com/mycozycloud/cozy-setup/gh-pages/assets/images/happycloud.png)
@@ -123,7 +185,7 @@ with a new experience. You can install Cozy on your own hardware where no one
 profiles you. You install only the applications you want. You can build your
 own one too.
 
-## Community 
+## Community
 
 You can reach the Cozy community via various support:
 

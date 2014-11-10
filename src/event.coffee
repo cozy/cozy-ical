@@ -1,6 +1,6 @@
 moment = require 'moment-timezone'
 timezones = require './timezones'
-RRule = require('rrule').RRule
+{RRule} = require 'rrule'
 
 module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
@@ -20,8 +20,13 @@ module.exports = (Event) ->
                 console.log "Recurring events need timezone."
                 return undefined
 
+        rrule = if @rrule? then RRule.parseString @rrule else null
+
+        attendees = @attendees?.map (attendee) -> attendee.email
+
         try
             event = new VEvent
+                stampDate: moment.tz moment(), 'UTC'
                 startDate: moment.tz @start, timezone
                 endDate: moment.tz @end, timezone
                 summary: @description
@@ -29,7 +34,8 @@ module.exports = (Event) ->
                 uid: @id
                 description: @details
                 allDay: allDay
-                rrule: @rrule
+                rrule: rrule
+                attendee: attendees
                 timezone: @timezone
         catch e
             console.log 'Can\'t parse event mandatory fields.'
@@ -37,20 +43,19 @@ module.exports = (Event) ->
             return undefined # all those elements are mandatory.
 
         @alarms?.forEach (alarm) =>
-            if alarm.action in ['DISPLAY', 'BOTH']
+            if alarm.action in [VAlarm.DISPLAY_ACTION, 'BOTH']
                 event.add new VAlarm
                     trigger: alarm.trigg
-                    action: 'DISPLAY'
+                    action: VAlarm.DISPLAY_ACTION
                     description: @description
 
-            if alarm.action in ['EMAIL', 'BOTH'] and @getAlarmAttendeesEmail?
-                @getAlarmAttendeesEmail().forEach (email) =>
-                    event.add new VAlarm
-                        trigger: alarm.trigg
-                        action: 'EMAIL'
-                        description: "#{@description} " + (@details or '')
-                        attendee: "mailto:#{email}"
-                        summary: @description
+            if alarm.action in [VAlarm.EMAIL_ACTION, 'BOTH'] and @getAlarmAttendeesEmail?
+                event.add new VAlarm
+                    trigger: alarm.trigg
+                    action: VAlarm.EMAIL_ACTION
+                    summary: @description
+                    description: @details or ''
+                    attendee: @getAlarmAttendeesEmail()
 
             # else : ignore other actions.
 
@@ -59,79 +64,35 @@ module.exports = (Event) ->
     # Return a valid Event object, or undefined.
     Event.fromIcal = (vevent) ->
         event = new Event()
+        {model} = vevent
 
-        event.description = vevent.fields["SUMMARY"] or
-                            vevent.fields["DESCRIPTION"]
-        if not event.description
-            console.log 'No event.description from iCal.'
-            return undefined
-
-        event.details = vevent.fields["DESCRIPTION"] or
-                            vevent.fields["SUMMARY"]
-        event.place = vevent.fields["LOCATION"]
-        rruleStr = vevent.fields["RRULE"]
-        event.rrule = vevent.fields["RRULE"]
-
-        try # .start and .end are required.
-            if vevent.fields['DTSTART-VALUE'] is 'DATE'
-                event.start = moment.tz(
-                    vevent.fields['DTSTART'],
-                    VEvent.icalDateFormat, 'GMT'
-                ).format Event.dateFormat
-                event.end = moment.tz(
-                    vevent.fields['DTEND'],
-                    VEvent.icalDateFormat, 'GMT'
-                ).format Event.dateFormat
-
+        timezone = model.timezone or 'UTC'
+        event.id = model.uid if model.uid?
+        event.description = model.summary or ''
+        event.details = model.description or ''
+        event.place = model.location
+        event.rrule = new RRule(model.rrule).toString()
+        if model.allDay
+            event.start = moment.tz model.startDate, 'UTC'
+                .format Event.dateFormat
+            event.end = moment.tz model.endDate, 'UTC'
+                .format Event.dateFormat
+        else
+            if timezone isnt 'UTC'
+                start = moment.tz model.startDate, timezone
+                end = moment.tz model.endDate, timezone
             else
-                timezone = vevent.fields['DTSTART-TZID']
-                # Filter by timezone list.
-                timezone = 'UTC' unless timezones[timezone]
+                start = moment.tz model.startDate, 'UTC'
+                end = moment.tz model.endDate, 'UTC'
 
-                if timezone isnt 'UTC'
-                    start = moment.tz(
-                        vevent.fields['DTSTART'],
-                        VEvent.icalDTFormat,
-                        timezone
-                    )
-                    end = moment.tz(
-                        vevent.fields['DTEND'],
-                        VEvent.icalDTFormat,
-                        timezone
-                    )
-
-                else
-                    start = moment.tz(
-                        vevent.fields['DTSTART'],
-                        VEvent.icalDTUTCFormat, 'UTC'
-                    )
-                    end = moment.tz(
-                        vevent.fields['DTEND'],
-                        VEvent.icalDTUTCFormat, 'UTC'
-                    )
-
-                # Format, only RRule doesn't use UTC
-                if vevent.fields['RRULE']?
-                    event.timezone = timezone
-                    event.start = start.format Event.ambiguousDTFormat
-                    event.end = end.format Event.ambiguousDTFormat
-                else
-                    event.start = start.toISOString()
-                    event.end = end.toISOString()
-
-        catch e
-            console.log 'event.start and event.end are required from //
-            iCal'
-            return undefined
-
-        if vevent.fields['RRULE']?
-            try # RRule may fail.
-                options = RRule.parseString vevent.fields["RRULE"]
-                event.rrule = RRule.optionsToString options
-
-            catch e # skip rrule on errors.
-                console.log "Fail RRULE parsing"
-                console.log e
+            # Format, only RRule doesn't use UTC
+            if model.rrule?
+                event.timezone = timezone
+                event.start = start.format Event.ambiguousDTFormat
+                event.end = end.format Event.ambiguousDTFormat
+            else
+                event.start = start.toISOString()
+                event.end = end.toISOString()
 
         # Alarms reminders.
         alarms = []
@@ -139,14 +100,15 @@ module.exports = (Event) ->
             if c.name is not 'VALARM'
                 return
 
-            trigg = c.fields['TRIGGER']
-            action = c.fields['ACTION']
-            isEmailAction = action in ['EMAIL', 'DISPLAY']
+            alarmModel = c.model
+            trigg = alarmModel.trigger
+            action = alarmModel.action
 
-            if trigg and trigg.match(Event.alarmTriggRegex) and isEmailAction
+            if trigg and trigg.match(Event.alarmTriggRegex)
                 alarms.push trigg: trigg, action: action
 
         event.alarms = alarms if alarms
+        event.tags = ['my calendar']
 
         return event
 
