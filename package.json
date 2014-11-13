@@ -4,7 +4,7 @@
   "description": "Cozy-Ical provides ICal Parser, generators and helpers",
   "main": "src/index",
   "scripts": {
-    "test": "mocha test/index.coffee --reporter spec --compilers coffee:coffee-script/register --colors",
+    "test": "cake tests",
     "build": "coffee -cb --output lib/ src/",
     "prepublish": "npm run build"
   },
