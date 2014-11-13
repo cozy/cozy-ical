@@ -10,8 +10,8 @@ moment = require 'moment-timezone'
 Alarm = class Alarm
 Event = class Event
     @dateFormat = 'YYYY-MM-DD'
-    @ambiguousDTFormat = 'YYYY-MM-DD[T]HH:mm:00'
-    @utcDTFormat = 'YYYY-MM-DD[T]HH:mm:00.000Z'
+    @ambiguousDTFormat = 'YYYY-MM-DD[T]HH:mm:00.000'
+    @utcDTFormat = 'YYYY-MM-DD[T]HH:mm:00.000[Z]'
 
 describe "Cozy models decorator", ->
 
@@ -61,8 +61,8 @@ describe "Cozy models decorator", ->
             should.exist event
             event.should.have.property 'id', 'aeba6310b07a22a72423b2b11f320692'
             event.should.have.property 'description', 'Recurring event'
-            event.should.have.property 'start', '2014-11-06T12:00:00'
-            event.should.have.property 'end', '2014-11-06T13:00:00'
+            event.should.have.property 'start', '2014-11-06T12:00:00.000'
+            event.should.have.property 'end', '2014-11-06T13:00:00.000'
             event.should.have.property 'place', 'Hidden dungeon'
             event.should.have.property 'details', 'Crawling a hidden dungeon'
             event.should.have.property 'rrule', 'FREQ=WEEKLY;INTERVAL=1;UNTIL=20150101T000000Z;BYDAY=TH'
@@ -120,8 +120,8 @@ describe "Cozy models decorator", ->
                     events = Event.extractEvents comp
                     events.length.should.equal 1
                     event = events[0]
-                    event.should.have.property 'start', '2014-11-11T14:00:00'
-                    event.should.have.property 'end', '2014-11-11T15:00:00'
+                    event.should.have.property 'start', '2014-11-11T14:00:00.000'
+                    event.should.have.property 'end', '2014-11-11T15:00:00.000'
 
             it "should generate a propery Cozy Event for event with attendees", ->
                 source = """
