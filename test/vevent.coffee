@@ -209,6 +209,36 @@ describe "vEvent", ->
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
 
+    describe "Creating a vEvent with attendees", ->
+         it "should render properly", ->
+            options =
+                uid: '[id-1]'
+                stampDate: new Date 2014, 11, 4, 10, 0
+                startDate: new Date 2014, 11, 4, 10, 0
+                endDate: new Date 2014, 11, 4, 11, 0
+                summary: 'Event summary'
+                location: 'some place'
+                attendees: [
+                    email: 'test@provider.tld', details: status: 'NEEDS-ACTION'
+                ]
+
+            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formatter = 'YYYYMMDD[T]HHmm[00Z]'
+            formattedStartDate = moment(options.startDate).format formatter
+            formattedEndDate = moment(options.endDate).format formatter
+            event = new VEvent options
+            output = event.toString()
+            expectedEmail = options.attendees[0].email
+            output.should.equal """
+                BEGIN:VEVENT
+                UID:#{options.uid}
+                DTSTAMP:#{formattedStampDate}
+                DTSTART:#{formattedStartDate}
+                DTEND:#{formattedEndDate}
+                ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=#{expectedEmail}:mailto:#{expectedEmail}
+                LOCATION:#{options.location}
+                SUMMARY:#{options.summary}
+                END:VEVENT""".replace /\n/g, '\r\n'
 
     describe 'Timezone support for vEvents', ->
         it 'should support timezones, set on Date objects', ->

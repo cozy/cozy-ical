@@ -72,8 +72,12 @@ module.exports = (Event) ->
         event.details = model.description or ''
         event.place = model.location
         event.rrule = new RRule(model.rrule).toString()
+        defaultCozyStatus = 'INVITATION-NOT-SENT'
         event.attendees = model.attendees?.map (attendee, index) ->
-            return id: index, email: attendee, contactid: null
+            status = attendee.details?.status or defaultCozyStatus
+            status = defaultCozyStatus if status is 'NEEDS-ACTION'
+            email = attendee.email
+            return id: (index + 1), email: email, contactid: null, status: status
 
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'

@@ -215,7 +215,11 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
         if @model.attendees
             for attendee in @model.attendees
-                @addRawField 'ATTENDEE', "mailto:#{attendee}"
+                status = attendee.details?.status or 'NEEDS-ACTION'
+                details = ";PARTSTAT=#{status}"
+                name = attendee.details?.name or attendee.email
+                details += ";CN=#{name}"
+                @addRawField "ATTENDEE#{details}", "mailto:#{attendee.email}", details
         @addRawField 'DESCRIPTION', @model.description
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'REPEAT', @model.repeat or null
@@ -231,6 +235,20 @@ module.exports.VAlarm = class VAlarm extends VComponent
         attendees = @getRawField 'ATTENDEE', true
         attendees = attendees?.map (attendee) ->
             return attendee.value.replace 'mailto:', ''
+
+            # extracts additional values if they exist
+            if attendee.details?.length > 0
+                details = {}
+                for detail in attendee.details
+                    if detail.indexOf('PARTSTAT') isnt -1
+                        [key, status] = detail.split '='
+                        details.status = status
+                    else if detail.indexOf('CN') isnt -1
+                        [key, name] = detail.split '='
+                        details.name = name
+            else
+                details = status: 'NEEDS-ACTION', name: email
+            return {email, details}
 
         summary = @getRawField('SUMMARY')?.value
 
@@ -452,7 +470,11 @@ module.exports.VEvent = class VEvent extends VComponent
 
         if @model.attendees?
             for attendee in @model.attendees
-                @addRawField 'ATTENDEE', "mailto:#{attendee}"
+                status = attendee.details?.status or 'NEEDS-ACTION'
+                details = ";PARTSTAT=#{status}"
+                name = attendee.details?.name or attendee.email
+                details += ";CN=#{name}"
+                @addRawField "ATTENDEE#{details}", "mailto:#{attendee.email}"
 
         @addRawField 'CATEGORIES', @model.categories or null
         @addRawField 'DESCRIPTION', @model.description or null
@@ -535,7 +557,21 @@ module.exports.VEvent = class VEvent extends VComponent
 
         attendees = @getRawField 'ATTENDEE', true
         attendees = attendees?.map (attendee) ->
-            return attendee.value.replace 'mailto:', ''
+            email = attendee.value.replace 'mailto:', ''
+
+            # extracts additional values if they exist
+            if attendee.details?.length > 0
+                details = {}
+                for detail in attendee.details
+                    if detail.indexOf('PARTSTAT') isnt -1
+                        [key, status] = detail.split '='
+                        details.status = status
+                    else if detail.indexOf('CN') isnt -1
+                        [key, name] = detail.split '='
+                        details.name = name
+            else
+                details = status: 'NEEDS-ACTION', name: email
+            return {email, details}
 
         @model =
             'uid': uid?.value or uuid.v1()

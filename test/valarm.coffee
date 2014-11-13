@@ -45,7 +45,7 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 description: 'My super description'
                 summary: 'My super summary'
-                attendees: ['random@isp.tld']
+                attendees: [email: 'random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.not.throw()
 
@@ -68,7 +68,7 @@ describe "vAlarm", ->
                 trigger: 'PT30M'
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
-                attendees: ['random@isp.tld']
+                attendees: [email: 'random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.throw MissingFieldError
 
@@ -77,7 +77,7 @@ describe "vAlarm", ->
                 trigger: 'PT30M'
                 action: VAlarm.EMAIL_ACTION
                 description: 'My super description'
-                attendees: ['random@isp.tld']
+                attendees: [email: 'random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.throw MissingFieldError
 
@@ -96,7 +96,7 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
                 description: 'My super description'
-                attendees: ['random@isp.tld']
+                attendees: [email: 'random@isp.tld']
             wrapper = -> alarm = new VAlarm options
             wrapper.should.not.throw()
 
@@ -107,15 +107,18 @@ describe "vAlarm", ->
                 action: VAlarm.EMAIL_ACTION
                 summary: 'My super summary'
                 description: 'My super description'
-                attendees: ['random@isp.tld', 'random2@isp2.tld']
+                attendees: [
+                    {email: 'random@isp.tld', details: name: 'Random'}
+                    {email: 'random2@isp2.tld', details: status: 'ACCEPTED'}
+                ]
             alarm = new VAlarm options
             output = alarm.toString()
             output.should.equal """
                 BEGIN:VALARM
                 ACTION:#{options.action}
                 TRIGGER:#{options.trigger}
-                ATTENDEE:mailto:#{options.attendees[0]}
-                ATTENDEE:mailto:#{options.attendees[1]}
+                ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=#{options.attendees[0].details.name}:mailto:#{options.attendees[0].email}
+                ATTENDEE;PARTSTAT=ACCEPTED;CN=#{options.attendees[1].email}:mailto:#{options.attendees[1].email}
                 DESCRIPTION:#{options.description}
                 SUMMARY:#{options.summary}
                 END:VALARM""".replace /\n/g, '\r\n'
