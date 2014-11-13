@@ -51,7 +51,6 @@ task 'tests', "Run tests #{taskDetails}", testsServer = (opts, callback) ->
     command += "--compilers coffee:coffee-script/register"
     exec command, (err, stdout, stderr) ->
         console.log stdout if stdout? and stdout.length > 0
-        #console.log stderr if stderr? and stderr.length > 0
         if err?
             err = err
             logger.error "Running mocha caught exception:\n" + err
