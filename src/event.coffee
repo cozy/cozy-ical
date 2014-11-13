@@ -106,11 +106,11 @@ module.exports = (Event) ->
 
         # Alarms reminders.
         alarms = []
-        vevent.subComponents.forEach (c) ->
-            if c.name is not 'VALARM'
+        vevent.subComponents.forEach (component) ->
+            if component.name is not 'VALARM'
                 return
 
-            alarmModel = c.model
+            alarmModel = component.model
             trigg = alarmModel.trigger
             action = alarmModel.action
 
