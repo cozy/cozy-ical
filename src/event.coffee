@@ -47,7 +47,8 @@ module.exports = (Event) ->
                     action: VAlarm.DISPLAY_ACTION
                     description: @description
 
-            if alarm.action in [VAlarm.EMAIL_ACTION, 'BOTH'] and @getAlarmAttendeesEmail?
+            if alarm.action in [VAlarm.EMAIL_ACTION, 'BOTH'] \
+            and @getAlarmAttendeesEmail?
                 mappedAttendees = @getAlarmAttendeesEmail().map (email) ->
                     return "mailto:#{email}"
                 event.add new VAlarm
@@ -77,7 +78,9 @@ module.exports = (Event) ->
             status = attendee.details?.status or defaultCozyStatus
             status = defaultCozyStatus if status is 'NEEDS-ACTION'
             email = attendee.email
-            return id: (index + 1), email: email, contactid: null, status: status
+            id = index + 1
+            contactid = null
+            return {id, email, contactid, status}
 
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'

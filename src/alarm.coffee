@@ -34,7 +34,7 @@ module.exports = (Alarm) ->
 
         if @action in ['EMAIL', 'BOTH'] and @getAttendeesEmail?
             mappedAttendees = @getAttendeesEmail().map (email) ->
-                    return "mailto:#{email}"
+                return "mailto:#{email}"
             vtodo.addAlarm
                 action: 'EMAIL'
                 description: @description

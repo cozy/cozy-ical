@@ -7,7 +7,8 @@ uuid = require 'uuid'
 
 VALID_TZ_LIST = moment.tz.names()
 
-{MissingFieldError, FieldConflictError, FieldDependencyError, InvalidValueError} = require './errors'
+{MissingFieldError, FieldConflictError, \
+FieldDependencyError, InvalidValueError} = require './errors'
 helpers = require './helpers'
 
 module.exports.decorateAlarm = require './alarm'
@@ -198,8 +199,6 @@ module.exports.VAlarm = class VAlarm extends VComponent
             unless @model.attendees?
                 throw new MissingFieldError 'attendees'
 
-        else if @model.action is VAlarm.AUDIO_ACTION
-            # nothing particular
         else
             expected = [
                 VAlarm.DISPLAY_ACTION
@@ -219,7 +218,8 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 details = ";PARTSTAT=#{status}"
                 name = attendee.details?.name or attendee.email
                 details += ";CN=#{name}"
-                @addRawField "ATTENDEE#{details}", "mailto:#{attendee.email}", details
+                fieldValue = "mailto:#{attendee.email}"
+                @addRawField "ATTENDEE#{details}", fieldValue, details
         @addRawField 'DESCRIPTION', @model.description
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'REPEAT', @model.repeat or null
@@ -519,7 +519,9 @@ module.exports.VEvent = class VEvent extends VComponent
 
         # if there is none of them, fallback to default: start+1d
         else if not endDate? and not duration?
-            endDate = moment.tz(startDate, iCalFormat, timezoneStart).add(1, 'd').toDate()
+            endDate = moment.tz startDate, iCalFormat, timezoneStart
+                        .add 1, 'd'
+                        .toDate()
 
         # creates the end end date with the duration added to it
         else if not endDate? and duration?
@@ -576,7 +578,8 @@ module.exports.VEvent = class VEvent extends VComponent
         @model =
             'uid': uid?.value or uuid.v1()
             'stampDate': moment.tz(stampDate, UTCFormat, 'UTC').toDate()
-            'startDate': moment.tz(startDate, iCalFormat, timezoneStart).toDate()
+            'startDate': moment.tz startDate, iCalFormat, timezoneStart
+                            .toDate()
             'endDate': endDate
             'duration': duration
             'attendees': attendees
@@ -601,14 +604,16 @@ module.exports.VTimezone = class VTimezone extends VComponent
         if not options
             return @
 
+        tzurl = "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
         @rawFields = [
-            key: 'TZID', value: options.timezone
-            key: 'TZURL', value: "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
+            {key: 'TZID', value: options.timezone}
+            {key: 'TZURL', value: tzurl}
         ]
 
         # zone = moment.tz.zone(timezone)
         # @add new VStandard
-        # startShift and endShift are equal because, actually, only alarm has timezone
+        # startShift and endShift are equal because, actually
+        # only alarm has timezone
         diff = moment.tz(options.startDate, options.timezone).format 'ZZ'
         vstandard = new VStandard options.startDate, diff, diff
         @add vstandard
@@ -637,10 +642,12 @@ module.exports.VStandard = class VStandard extends VComponent
         if not options
             return @
 
+        dtstart = moment options.startDate
+                    .format VStandard.icalDTFormat
         @rawFields = [
-            key: 'DTSTART', value: moment(options.startDate).format VStandard.icalDTFormat
-            key: 'TZOFFSETFROM', value: options.startShift
-            key: 'TZOFFSETTO', value: options.endShift
+            {key: 'DTSTART', value: dtstart}
+            {key: 'TZOFFSETFROM', value: options.startShift}
+            {key: 'TZOFFSETTO', value: options.endShift}
         ]
 
 
@@ -655,10 +662,12 @@ module.exports.VDaylight = class VDaylight extends VComponent
         if not options
             return @
 
+        dtstart = moment options.startDate
+                    .format VDaylight.icalDTFormat
         @rawFields = [
-            key: 'DTSTART', value: moment(options.startDate).format VDaylight.icalDTFormat
-            key: 'TZOFFSETFROM', value: options.startShift
-            key: 'TZOFFSETTO', value: options.endShift
+            {key: 'DTSTART', value: dtstart}
+            {key: 'TZOFFSETFROM', value: options.startShift}
+            {key: 'TZOFFSETTO', value: options.endShift}
         ]
 
 
@@ -681,8 +690,8 @@ module.exports.ICalParser = class ICalParser
         class FakeStream extends require('events').EventEmitter
             readable: true
             writable: false
-            setEncoding: -> throw 'not implemented'
-            pipe: -> throw 'not implemented'
+            setEncoding: -> throw new Error 'not implemented'
+            pipe: -> throw new Error 'not implemented'
             destroy: ->  # nothing to do
             resume: ->   # nothing to do
             pause: ->    # nothing to do
