@@ -283,12 +283,12 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 attendees = []
 
         @model =
-            'action': action
-            'trigger': trigger
-            'attendees': attendees
-            'description': description
-            'repeat': @getRawField('REPEAT')?.value or null
-            'summary': summary
+            action: action
+            rigger: trigger
+            attendees: attendees
+            description: description
+            repeat: @getRawField('REPEAT')?.value or null
+            summary: summary
 
 # The VTodo is used to described a dated action.
 #
@@ -361,13 +361,13 @@ module.exports.VTodo = class VTodo extends VComponent
 
 
         @model =
-            'uid': @getRawField('UID')?.value or uuid.v1()
-            'stampDate': moment(stampDate).toDate()
-            'description': @getRawField('DESCRIPTION')?.value or ''
-            'startDate': startDate.toDate()
-            'due': due
-            'duration': duration
-            'summary': @getRawField('SUMMARY')?.value or ''
+            uid: @getRawField('UID')?.value or uuid.v1()
+            stampDate: moment(stampDate).toDate()
+            description: @getRawField('DESCRIPTION')?.value or ''
+            startDate: startDate.toDate()
+            due: due
+            duration: duration
+            summary: @getRawField('SUMMARY')?.value or ''
             timezone: timezone
 
     # @param options { action, description, attendee, summary }
@@ -579,21 +579,21 @@ module.exports.VEvent = class VEvent extends VComponent
             return {email, details}
 
         @model =
-            'uid': uid?.value or uuid.v1()
-            'stampDate': moment.tz(stampDate, UTCFormat, 'UTC').toDate()
-            'startDate': moment.tz startDate, iCalFormat, timezoneStart
+            uid: uid?.value or uuid.v1()
+            stampDate: moment.tz(stampDate, UTCFormat, 'UTC').toDate()
+            startDate: moment.tz startDate, iCalFormat, timezoneStart
                             .toDate()
-            'endDate': endDate
-            'duration': duration
-            'attendees': attendees
-            'categories': @getRawField('CATEGORIES')?.value or null
-            'description': @getRawField('DESCRIPTION')?.value or null
-            'location': @getRawField('LOCATION')?.value or null
-            'organizer': @getRawField('ORGANIZER')?.value or null
-            'rrule': rruleOptions or null
-            'summary': @getRawField('SUMMARY')?.value or null
-            'allDay': allDay or null
-            'timezone': timezone or null
+            endDate: endDate
+            duration: duration
+            attendees: attendees
+            categories: @getRawField('CATEGORIES')?.value or null
+            description: @getRawField('DESCRIPTION')?.value or null
+            location: @getRawField('LOCATION')?.value or null
+            organizer: @getRawField('ORGANIZER')?.value or null
+            rrule: rruleOptions or null
+            summary: @getRawField('SUMMARY')?.value or null
+            allDay: allDay or null
+            timezone: timezone or null
 
 # @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent
