@@ -284,7 +284,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
         @model =
             action: action
-            rigger: trigger
+            trigger: trigger
             attendees: attendees
             description: description
             repeat: @getRawField('REPEAT')?.value or null
