@@ -199,6 +199,9 @@ module.exports.VAlarm = class VAlarm extends VComponent
             unless @model.attendees?
                 throw new MissingFieldError 'attendees'
 
+        else if @model.action is VAlarm.AUDIO_ACTION
+            # nothing to be done
+
         else
             expected = [
                 VAlarm.DISPLAY_ACTION
