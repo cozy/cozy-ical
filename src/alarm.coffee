@@ -1,5 +1,4 @@
 moment = require 'moment-timezone'
-timezones = require './timezones'
 
 module.exports = (Alarm) ->
     {VCalendar, VTodo, VAlarm, VTimezone} = require './index'
@@ -24,50 +23,46 @@ module.exports = (Alarm) ->
         vtodo = new VTodo
             startDate: startDate
             uid: @id
+            stampDate: moment.tz moment(), 'UTC'
             summary: @description
 
         if @action in ['DISPLAY', 'BOTH']
             vtodo.addAlarm
                 action: 'DISPLAY'
                 description: @description
+                trigger: 'PT0M'
 
         if @action in ['EMAIL', 'BOTH'] and @getAttendeesEmail?
-            @getAttendeesEmail().forEach (email) =>
-                vtodo.addAlarm
-                    action: 'EMAIL'
-                    description: "#{@description} " + (@details or '')
-                    attendee: "mailto:#{email}"
-                    summary: @description
+            mappedAttendees = @getAttendeesEmail().map (email) ->
+                return "mailto:#{email}"
+            vtodo.addAlarm
+                action: 'EMAIL'
+                description: @description
+                attendee: mappedAttendees
+                summary: @description
+                trigger: 'PT0M'
 
         return vtodo
 
-    Alarm.fromIcal = (vtodo) ->
+    Alarm.fromIcal = (vtodo, defaultCalendar = 'my calendar') ->
         alarm = new Alarm()
-        alarm.id = vtodo.fields["UID"] if vtodo.fields["UID"]
-        alarm.description = vtodo.fields["SUMMARY"] or
-                            vtodo.fields["DESCRIPTION"]
+        todoModel = vtodo.model
+        alarm.id = todoModel.uid if todoModel.uid?
+        alarm.description = todoModel.summary or todoModel.description
 
         if not alarm.description
             console.log 'No alarm.description from iCal.'
             return undefined
 
         try # .trigg is required.
-            timezone = vtodo.fields['DTSTART-TZID']
-            # Filter by timezone list.
-            timezone = 'UTC' unless timezones[timezone]
+            timezone = vtodo.timezone
 
             if timezone isnt 'UTC'
-                alarm.trigg = moment.tz(
-                    vtodo.fields['DTSTART'],
-                    VAlarm.icalDTFormat,
-                    timezone
-                ).toISOString()
-
+                alarm.trigg = moment.tz todoModel.startDate, timezone
+                    .toISOString()
             else
-                alarm.trigg = moment(
-                    vtodo.fields['DTSTART'],
-                    VAlarm.icalDTUTCFormat
-                ).toISOString()
+                alarm.trigg = moment.tz todoModel.startDate, 'UTC'
+                    .toISOString()
         catch e
             console.log 'Can\'t construct alarm.trigg from iCal.'
             console.log e
@@ -87,24 +82,18 @@ module.exports = (Alarm) ->
             # Fill the set actions, with filtered actions.
             actions = valarms.reduce (actions, valarm) ->
                 if actions['BOTH']? # We already got all actions we can handle.
-                    return actions
-
-                # Filter durations uncompatibles with cozy alarm object.
-                if (valarm.fields['TRIGGER'] not in [
-                    'PT0M', '-PT0M', 'PT0S', '-PT0S', '-PT0H', '-PT0H'])
-                    return actions
+                    return 'BOTH'
 
                 # Filter action and convert to cozy specific 'BOTH' if needed.
-                action = valarm.fields['ACTION']
-
+                action = valarm.model.action
                 if action is 'DISPLAY'
                     if actions['EMAIL']?
-                        actions = 'BOTH': true
+                        return 'BOTH'
                     else
                         actions[action] = true
                 if action is 'EMAIL'
                     if actions['DISPLAY']?
-                        actions = 'BOTH': true
+                        return 'BOTH'
                     else actions[action] = true
 
                 return actions
@@ -115,17 +104,17 @@ module.exports = (Alarm) ->
             if actions.length is 0
                 console.log 'iCal VTodo hasn\'t alarm compatibles.'
                 return undefined
-
             else
+                actions = actions.shift() if actions.length is 1
                 alarm.action = actions
 
+        alarm.tags = [defaultCalendar]
         return alarm
 
-    Alarm.extractAlarms = (component) ->
+    Alarm.extractAlarms = (component, defaultCalendar = 'my calendar') ->
         alarms = []
         component.walk (component) ->
             if component.name is 'VTODO'
-                alarm = Alarm.fromIcal component
+                alarm = Alarm.fromIcal component, defaultCalendar
                 alarms.push alarm if alarm? # to skip unreadable VTodo.
-
         return alarms

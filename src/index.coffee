@@ -1,6 +1,15 @@
 fs = require 'fs'
 moment = require 'moment-timezone'
 lazy = require 'lazy'
+extend = require 'extend'
+uuid = require 'uuid'
+{RRule} = require 'rrule'
+
+VALID_TZ_LIST = moment.tz.names()
+
+{MissingFieldError, FieldConflictError, \
+FieldDependencyError, InvalidValueError} = require './errors'
+helpers = require './helpers'
 
 module.exports.decorateAlarm = require './alarm'
 module.exports.decorateEvent = require './event'
@@ -41,16 +50,39 @@ module.exports.VComponent = class VComponent
     @icalDTFormat: 'YYYYMMDDTHHmm[00]'
     @icalDateFormat: 'YYYYMMDD'
 
-    constructor: ->
+    constructor: (options) ->
+        # deep clone the options
+        @model = extend true, {}, options
         @subComponents = []
-        @fields = {}
+        @rawFields = []
+
+        # don't validate nor build automatically if no options have been passed
+        # i.e. during parsing
+        if options?
+            @validate()
+            @build()
+
+    validate: ->
+        # should be defined by subclass
+
+    build: -> @rawFields = []
+
+    extract: -> @model = {}
 
     toString: ->
         buf = new iCalBuffer
         buf.addLine "BEGIN:#{@name}"
-        buf.addLine "#{att}:#{val}" for att, val of @fields
-        buf.addLine component.toString() for component in @subComponents
+        @_toStringFields buf
+        @_toStringComponents buf
         buf.addString "END:#{@name}"
+
+    _toStringFields: (buf) ->
+        for field in @rawFields
+            buf.addLine "#{field.key}:#{field.value}" if field.value?
+
+    _toStringComponents: (buf) ->
+        for component in @subComponents
+            buf.addLine component.toString()
 
     add: (component) ->
         @subComponents.push component if component? # Skip invalid component
@@ -59,6 +91,21 @@ module.exports.VComponent = class VComponent
         walker this
         sub.walk walker for sub in @subComponents
 
+    addRawField: (key, value, details = {}) ->
+        @rawFields.push {key, value, details}
+
+    getRawField: (key, findMany = false) ->
+
+        defaultResult = if findMany then [] else null
+
+        for field in @rawFields
+            if field.key is key
+                if findMany
+                    defaultResult.push field
+                else
+                    return field if field.key
+
+        return defaultResult
 
 # Calendar component. It's the representation of the root object of a Calendar.
 # @param options { organization, title }
@@ -67,16 +114,34 @@ module.exports.VCalendar = class VCalendar extends VComponent
 
     constructor: (options) ->
         super
-        # During parsing, VAlarm are initialized without any property,
-        # so we skip the processing below
-        return @ if not options
-
-        @fields =
-            VERSION: "2.0"
-
-        @fields['PRODID'] = \
-            "-//#{options.organization}//NONSGML #{options.title}//EN"
         @vtimezones = {}
+
+    validate: ->
+        unless @model.organization?
+            throw new MissingFieldError 'organization'
+
+        unless @model.title?
+            throw new MissingFieldError 'title'
+
+    build: ->
+        super()
+        prodid = "-//#{@model.organization}//NONSGML #{@model.title}//EN"
+        @addRawField 'VERSION', '2.0'
+        @addRawField 'PRODID', prodid
+
+    extract: ->
+        super()
+        {value} = @getRawField 'PRODID'
+        extractPRODID = /-\/\/([\w. ]+)\/\/?(?:NONSGML )?(.+)\/\/.*/
+        results = value.match extractPRODID
+
+        if results?
+            [_, organization, title] = results
+        else
+            organization = 'Undefined organization'
+            title = 'Undefined title'
+
+        @model = {organization, title}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
     # anyway to support them if necessary in future"
@@ -87,9 +152,9 @@ module.exports.VCalendar = class VCalendar extends VComponent
     toString: ->
         buf = new iCalBuffer
         buf.addLine "BEGIN:#{@name}"
-        buf.addLine "#{att}:#{val}" for att, val of @fields
+        @_toStringFields buf
         buf.addLine vtimezone.toString() for _,vtimezone of @vtimezones
-        buf.addLine component.toString() for component in @subComponents
+        @_toStringComponents buf
         buf.addString "END:#{@name}"
 
 
@@ -100,25 +165,130 @@ module.exports.VCalendar = class VCalendar extends VComponent
 module.exports.VAlarm = class VAlarm extends VComponent
     name: 'VALARM'
 
-    constructor: (options) ->
-        super
+    @EMAIL_ACTION: 'EMAIL'
+    @DISPLAY_ACTION: 'DISPLAY'
+    @AUDIO_ACTION: 'AUDIO'
 
-        # During parsing, VAlarm are initialized without any property,
-        # so we skip the processing below
-        if not options
-            return @
+    validate: ->
+        unless @model.action?
+            throw new MissingFieldError 'action'
 
-        @fields =
-            ACTION: options.action
-            TRIGGER: options.trigger
+        unless @model.trigger?
+            throw new MissingFieldError 'trigger'
 
-        if options.description?
-            @fields.DESCRIPTION = options.description
+        # If there is a `duration` field or a `repeat` field,
+        # they must both occur
+        if @model.duration? and not @model.repeat?
+            throw new FieldDependencyError 'duration', 'repeat'
+        else if (not @model.duration? and @model.repeat?)
+            throw new FieldDependencyError 'repeat', 'duration'
 
-        if options.action is 'EMAIL'
-            @fields.ATTENDEE = options.attendee
-            @fields.SUMMARY = options.summary
+        # Validates that action is in its range value
+        # and specific case by action
+        if @model.action is VAlarm.DISPLAY_ACTION
+            unless @model.description?
+                throw new MissingFieldError 'description'
 
+        else if @model.action is VAlarm.EMAIL_ACTION
+            unless @model.description?
+                throw new MissingFieldError 'description'
+
+            unless @model.summary?
+                throw new MissingFieldError 'summary'
+
+            unless @model.attendees?
+                throw new MissingFieldError 'attendees'
+
+        else if @model.action is VAlarm.AUDIO_ACTION
+            # nothing to be done
+
+        else
+            expected = [
+                VAlarm.DISPLAY_ACTION
+                VAlarm.EMAIL_ACTION
+                VAlarm.AUDIO_ACTION
+            ]
+            throw new InvalidValueError 'action', @model.action, expected
+
+    build: ->
+        super()
+        @addRawField 'ACTION', @model.action
+        @addRawField 'TRIGGER', @model.trigger
+
+        if @model.attendees
+            for attendee in @model.attendees
+                status = attendee.details?.status or 'NEEDS-ACTION'
+                details = ";PARTSTAT=#{status}"
+                name = attendee.details?.name or attendee.email
+                details += ";CN=#{name}"
+                fieldValue = "mailto:#{attendee.email}"
+                @addRawField "ATTENDEE#{details}", fieldValue, details
+        @addRawField 'DESCRIPTION', @model.description
+        @addRawField 'DURATION', @model.duration or null
+        @addRawField 'REPEAT', @model.repeat or null
+        @addRawField 'SUMMARY', @model.summary
+
+    extract: ->
+        super()
+
+        trigger = @getRawField('TRIGGER')?.value or null
+
+        description = @getRawField('DESCRIPTION')?.value
+
+        attendees = @getRawField 'ATTENDEE', true
+        attendees = attendees?.map (attendee) ->
+            return attendee.value.replace 'mailto:', ''
+
+            # extracts additional values if they exist
+            if attendee.details?.length > 0
+                details = {}
+                for detail in attendee.details
+                    if detail.indexOf('PARTSTAT') isnt -1
+                        [key, status] = detail.split '='
+                        details.status = status
+                    else if detail.indexOf('CN') isnt -1
+                        [key, name] = detail.split '='
+                        details.name = name
+            else
+                details = status: 'NEEDS-ACTION', name: email
+            return {email, details}
+
+        summary = @getRawField('SUMMARY')?.value
+
+        expected = [
+            VAlarm.DISPLAY_ACTION
+            VAlarm.EMAIL_ACTION
+            VAlarm.AUDIO_ACTION
+        ]
+
+        action = @getRawField('ACTION')?.value
+        if action not in expected
+            action = VAlarm.DISPLAY_ACTION
+            unless description?
+                description = @parent?.getRawField('SUMMARY')?.value or ''
+
+        # It must have mandatory fields filled based on action
+        else if action is VAlarm.DISPLAY_ACTION
+            unless description?
+                description = @parent?.getRawField('SUMMARY')?.value or ''
+
+        else if action is VAlarm.EMAIL_ACTION
+            unless @model.description?
+                description = @parent?.getRawField('DESCRIPTION')?.value or ''
+
+            unless @model.summary?
+                summary = @parent?.getRawField('SUMMARY')?.value or ''
+
+            unless @model.attendees?
+                attendees = []
+
+        @model =
+            action: action
+            trigger: trigger
+            attendees: attendees
+            description: description
+            repeat: @getRawField('REPEAT')?.value or null
+            summary: summary
 
 # The VTodo is used to described a dated action.
 #
@@ -131,105 +301,299 @@ module.exports.VAlarm = class VAlarm extends VComponent
 module.exports.VTodo = class VTodo extends VComponent
     name: 'VTODO'
 
-    constructor: (options) ->
-        super
+    validate: ->
+        unless @model.uid?
+            throw new MissingFieldError 'uid'
 
-        # During parsing, VTodo are initialized without any property,
-        # so we skip the processing below
-        if options
-            startDate = moment options.startDate
+        unless @model.stampDate?
+            throw new MissingFieldError 'stampDate'
 
-            @fields =
-                DTSTART: startDate.format VTodo.icalDTUTCFormat
-                SUMMARY: options.summary
-                DURATION: 'PT30M'
-                UID: options.uid
+        if @model.due? and @model.duration?
+            throw new FieldConflictError 'due', 'duration'
 
-            if options.description?
-                @fields.DESCRIPTION = options.description
+        if @model.duration? and not @model.startDate?
+            throw new FieldDependencyError 'startDate', 'duration'
+
+    build: ->
+        super()
+        # Formats stamp date to valid iCal date
+        stampDate = moment @model.stampDate
+
+        # Adds UID and DTSTAMP fields
+        @addRawField 'UID', @model.uid
+        @addRawField 'DTSTAMP', stampDate.format VEvent.icalDTUTCFormat
+
+        # Formats start date if it exists
+        if @model.startDate?
+            startDate = moment @model.startDate
+            formattedStartDate = startDate.format VTodo.icalDTUTCFormat
+
+        @addRawField 'DESCRIPTION', @model.description or null
+        @addRawField 'DTSTART', formattedStartDate or null
+        @addRawField 'DUE', @model.due or null
+        @addRawField 'DURATION', @model.duration or null
+        @addRawField 'SUMMARY', @model.summary or null
+
+    extract: ->
+        super()
+
+        stampDate = @getRawField('DTSTAMP')?.value or moment()
+
+        startDate = @getRawField('DTSTART')?.value
+        due = @getRawField('DUE')?.value
+        duration = @getRawField('DURATION')?.value
+
+        # Both can't exist, we remove duration
+        if due? and duration?
+            duration = null
+
+        if startDate?
+            details = @getRawField('DTSTART').details
+            if details.length > 0
+                [_, timezone] = details[0].split '='
+                if timezone not in VALID_TZ_LIST
+                    timezone = 'UTC'
+            else
+                timezone = 'UTC'
+            startDate = moment.tz startDate, VTodo.icalDTUTCFormat, timezone
+        else if not startDate? and duration?
+            startDate = moment.tz moment(), 'UTC'
+
+
+        @model =
+            uid: @getRawField('UID')?.value or uuid.v1()
+            stampDate: moment(stampDate).toDate()
+            description: @getRawField('DESCRIPTION')?.value or ''
+            startDate: startDate.toDate()
+            due: due
+            duration: duration
+            summary: @getRawField('SUMMARY')?.value or ''
+            timezone: timezone
 
     # @param options { action, description, attendee, summary }
     addAlarm: (options) ->
-        options.trigger = 'PT0M'
         @add new VAlarm options
-
 
 # @param options { startDate, endDate, summary, location, uid,
 #                  description, allDay, rrule, timezone }
 module.exports.VEvent = class VEvent extends VComponent
     name: 'VEVENT'
 
-    constructor: (options) ->
-        super
+    validate: ->
+        unless @model.uid?
+            throw new MissingFieldError 'uid'
 
-        # During parsing, VEvent are initialized without any property,
-        # so we skip the processing below
-        if options
+        unless @model.stampDate?
+            throw new MissingFieldError 'stampDate'
 
-            @fields =
-                SUMMARY:     options.summary
-                LOCATION:    options.location
-                UID:         options.uid
+        unless @model.startDate?
+            throw new MissingFieldError 'startDate'
 
-            if options.description?
-                @fields.DESCRIPTION = options.description
+        if @model.endDate? and @model.duration?
+            throw new FieldConflictError 'endDate', 'duration'
 
-            fieldS = 'DTSTART'
-            fieldE = 'DTEND'
-            formatS = null
-            formatE = null
-            # by default we have no information on timezone for each date
-            tzS = null
-            tzE = null
+    build: ->
+        super()
 
-            if options.allDay
-                # for all day event timezone information is not needed
-                fieldS += ";VALUE=DATE"
-                fieldE += ";VALUE=DATE"
-                formatS = formatE = VEvent.icalDateFormat
+        # if there is not endDate nor duration AND not recurrence rule
+        # then the default is 1 day
+        if not @model.endDate? and not @model.duration? and not @model.rrule?
+            @model.endDate = moment(@model.startDate).add(1, 'd').toDate()
 
-            else if options.rrule
-                formatS = formatE = VEvent.icalDTFormat # set format (date-time, not trailing Z)
-                tzS = tzE = options.timezone # remember timezone
+        # Preparing start and end dates formatting
+        fieldStart = "DTSTART"
+        fieldEnd = "DTEND"
+        formatStart = null
+        formatEnd = null
 
-                # Lightning can't parse RRULE with DTSTART field in it.
-                # So skip it from the RRULE, which is formated like this :
-                # RRULE:FREQ=WEEKLY;DTSTART=20141014T160000Z;INTERVAL=1;BYDAY=TU
-                rrule = options.rrule.split ';'
-                       .filter (s) -> s.indexOf('DTSTART') isnt 0
-                       .join ';'
+        # By default we have no information on timezone for each date (it's UTC)
+        timezoneStart = null
+        timezoneEnd = null
 
-                @fields['RRULE'] = rrule
+        # "all-day" event
+        if @model.allDay
+            # for all day event timezone information is not needed
+            fieldStart += ";VALUE=DATE"
+            fieldEnd += ";VALUE=DATE"
+            formatStart = formatEnd = VEvent.icalDateFormat
 
-            else # Punctual event.
-                if options.timezone
-                    # if timezone is specified with options
-                    formatS = formatE = VEvent.icalDTFormat # set format (date-time, no trailing Z)
-                    tzS = tzE = options.timezone # remember timezone
+        # recurring event
+        else if @model.rrule?
+            # format is date-time with no trailing Z
+            formatStart = formatEnd = VEvent.icalDTFormat
+            timezoneStart = timezoneEnd = @model.timezone
+
+        # punctual event
+        else
+            # if timezone is specified with options
+            if @model.timezone
+                # format is a date-time with no trailing Z
+                formatStart = formatEnd = VEvent.icalDTFormat
+                timezoneStart = timezoneEnd = @model.timezone
+
+            # otherwise, try to get timezone information from Date itself
+            else
+                # if so, set format and timezone name like above
+                if @model.startDate.getTimezone?
+                    formatStart = VEvent.icalDTFormat
+                    timezoneStart = @model.startDate.getTimezone()
+
+                # else format is a UTC date-time
                 else
-                    # otherwise, try to get timezone information from Date itself
-                    if options.startDate.getTimezone?
-                        # if so, set format and tz name like above
-                        formatS = VEvent.icalDTFormat
-                        tzS = options.startDate.getTimezone()
-                    else
-                        # if there are not tz info - use UTC formatting (date-time with trailing Z)
-                        formatS = VEvent.icalDTUTCFormat
+                    formatStart = VEvent.icalDTUTCFormat
 
-                    # repeat for end date ...
-                    if options.endDate.getTimezone?
-                        formatE = VEvent.icalDTFormat
-                        tzE = options.startDate.getTimezone()
-                    else
-                        formatE = VEvent.icalDTUTCFormat
+                # repeat for end date ...
+                if @model.endDate.getTimezone?
+                    formatEnd = VEvent.icalDTFormat
+                    timezoneEnd = @model.startDate.getTimezone()
+                else
+                    formatEnd = VEvent.icalDTUTCFormat
 
-            # if we have tz information - add it to field names
-            fieldS += ";TZID=#{tzS}" if tzS
-            fieldE += ";TZID=#{tzE}" if tzE
+        # fields name are different if there is a timezone or not
+        fieldStart += ";TZID=#{timezoneStart}" if timezoneStart?
+        fieldEnd += ";TZID=#{timezoneEnd}" if timezoneEnd?
 
-            @fields[fieldS] = moment(options.startDate).format formatS
-            @fields[fieldE] = moment(options.endDate).format formatE
+        if @model.rrule?
+            # if rrule `dtstart` property is specified, RRule outputs
+            # a `dtstart` field in the rule, which is not part of the standard,
+            # resulting in errors in some clients (i.e Lightning)
+            delete @model.rrule.dtstart
 
+            rrule = new RRule(@model.rrule).toString()
+
+        # Formats stamp date to valid iCal date
+        stampDate = moment @model.stampDate
+        # Adds UID and DTSTAMP fields
+        @addRawField 'UID', @model.uid
+        @addRawField 'DTSTAMP', stampDate.format VEvent.icalDTUTCFormat
+
+        @addRawField fieldStart, moment(@model.startDate).format formatStart
+        if @model.endDate?
+            @addRawField fieldEnd, moment(@model.endDate).format formatEnd
+
+        if @model.attendees?
+            for attendee in @model.attendees
+                status = attendee.details?.status or 'NEEDS-ACTION'
+                details = ";PARTSTAT=#{status}"
+                name = attendee.details?.name or attendee.email
+                details += ";CN=#{name}"
+                @addRawField "ATTENDEE#{details}", "mailto:#{attendee.email}"
+
+        @addRawField 'CATEGORIES', @model.categories or null
+        @addRawField 'DESCRIPTION', @model.description or null
+        @addRawField 'DURATION', @model.duration or null
+        @addRawField 'LOCATION', @model.location or null
+        @addRawField 'ORGANIZER', @model.organizer or null
+        @addRawField 'RRULE', rrule or null
+        @addRawField 'SUMMARY', @model.summary or null
+
+    extract: ->
+        uid = @getRawField 'UID'
+        stampDate = @getRawField('DTSTAMP')?.value or moment()
+
+        # gets date start and its timezone if found
+        dtstart = @getRawField 'DTSTART'
+        if dtstart?
+            startDate = dtstart.value
+            # details for a dtstart field is timezone indicator
+            if dtstart.details?.length > 0
+                if dtstart.details[0] is 'VALUE=DATE'
+                    timezoneStart = 'UTC'
+                    allDay = true
+                else
+                    [_, timezoneStart] = dtstart.details[0].split '='
+                    if timezoneStart     not in VALID_TZ_LIST
+                        timezoneStart = 'UTC'
+            else
+                timezoneStart = 'UTC'
+        else
+            startDate = moment.tz(moment(), 'UTC').format iCalFormat
+            timezoneStart = 'UTC'
+
+        dtend = @getRawField 'DTEND'
+        endDate = dtend?.value or null
+        duration = @getRawField('DURATION')?.value or null
+
+        UTCFormat =  'YYYYMMDDTHHmmss[Z]'
+        iCalFormat = 'YYYYMMDDTHHmmss'
+        # can't have both at the same time, drop duration if it's the case
+        if endDate? and duration?
+            duration = null
+
+        # if there is none of them, fallback to default: start+1d
+        else if not endDate? and not duration?
+            endDate = moment.tz startDate, iCalFormat, timezoneStart
+                        .add 1, 'd'
+                        .toDate()
+
+        # creates the end end date with the duration added to it
+        else if not endDate? and duration?
+            weeksNum = helpers.iCalDurationToUnitValue duration, 'W'
+            daysNum = helpers.iCalDurationToUnitValue duration, 'D'
+            hoursNum = helpers.iCalDurationToUnitValue duration, 'H'
+            minutesNum = helpers.iCalDurationToUnitValue duration, 'M'
+            secondsNum = helpers.iCalDurationToUnitValue duration, 'S'
+            endDate = moment.tz startDate, iCalFormat, timezoneStart
+            endDate = endDate.add weeksNum, 'w'
+                .add daysNum, 'd'
+                .add hoursNum, 'h'
+                .add minutesNum, 'm'
+                .add secondsNum, 's'
+                .toDate()
+
+            duration = null
+
+        # gets end date and its timezone if found
+        else if endDate?
+            # details for a dtend field is timezone indicator
+            if dtend.details?.length > 0
+                [_, timezoneEnd] = dtstart.details[0].split '='
+                if timezoneEnd not in VALID_TZ_LIST
+                    timezoneEnd = 'UTC'
+            else
+                timezoneEnd = 'UTC'
+
+            endDate = moment.tz(endDate, iCalFormat, timezoneEnd).toDate()
+
+        rrule = @getRawField('RRULE')?.value
+        if rrule?
+            timezone = timezoneStart unless timezoneStart is 'UTC'
+            rruleOptions = RRule.parseString rrule
+
+        attendees = @getRawField 'ATTENDEE', true
+        attendees = attendees?.map (attendee) ->
+            email = attendee.value.replace 'mailto:', ''
+
+            # extracts additional values if they exist
+            if attendee.details?.length > 0
+                details = {}
+                for detail in attendee.details
+                    if detail.indexOf('PARTSTAT') isnt -1
+                        [key, status] = detail.split '='
+                        details.status = status
+                    else if detail.indexOf('CN') isnt -1
+                        [key, name] = detail.split '='
+                        details.name = name
+            else
+                details = status: 'NEEDS-ACTION', name: email
+            return {email, details}
+
+        @model =
+            uid: uid?.value or uuid.v1()
+            stampDate: moment.tz(stampDate, UTCFormat, 'UTC').toDate()
+            startDate: moment.tz startDate, iCalFormat, timezoneStart
+                            .toDate()
+            endDate: endDate
+            duration: duration
+            attendees: attendees
+            categories: @getRawField('CATEGORIES')?.value or null
+            description: @getRawField('DESCRIPTION')?.value or null
+            location: @getRawField('LOCATION')?.value or null
+            organizer: @getRawField('ORGANIZER')?.value or null
+            rrule: rruleOptions or null
+            summary: @getRawField('SUMMARY')?.value or null
+            allDay: allDay or null
+            timezone: timezone or null
 
 # @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent
@@ -243,14 +607,16 @@ module.exports.VTimezone = class VTimezone extends VComponent
         if not options
             return @
 
-        @fields =
-            TZID: options.timezone
-            TZURL: "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
-
+        tzurl = "http://tzurl.org/zoneinfo/#{options.timezone}.ics"
+        @rawFields = [
+            {key: 'TZID', value: options.timezone}
+            {key: 'TZURL', value: tzurl}
+        ]
 
         # zone = moment.tz.zone(timezone)
         # @add new VStandard
-        # startShift and endShift are equal because, actually, only alarm has timezone
+        # startShift and endShift are equal because, actually
+        # only alarm has timezone
         diff = moment.tz(options.startDate, options.timezone).format 'ZZ'
         vstandard = new VStandard options.startDate, diff, diff
         @add vstandard
@@ -279,10 +645,13 @@ module.exports.VStandard = class VStandard extends VComponent
         if not options
             return @
 
-        @fields =
-            DTSTART: moment(options.startDate).format VStandard.icalDTFormat
-            TZOFFSETFROM: options.startShift
-            TZOFFSETTO: options.endShift
+        dtstart = moment options.startDate
+                    .format VStandard.icalDTFormat
+        @rawFields = [
+            {key: 'DTSTART', value: dtstart}
+            {key: 'TZOFFSETFROM', value: options.startShift}
+            {key: 'TZOFFSETTO', value: options.endShift}
+        ]
 
 
 # @param options { startDate, startShift, endShift }
@@ -296,10 +665,13 @@ module.exports.VDaylight = class VDaylight extends VComponent
         if not options
             return @
 
-        @fields =
-            DTSTART: moment(options.startDate).format VDaylight.icalDTFormat
-            TZOFFSETFROM: options.startShift
-            TZOFFSETTO: options.endShift
+        dtstart = moment options.startDate
+                    .format VDaylight.icalDTFormat
+        @rawFields = [
+            {key: 'DTSTART', value: dtstart}
+            {key: 'TZOFFSETFROM', value: options.startShift}
+            {key: 'TZOFFSETTO', value: options.endShift}
+        ]
 
 
 module.exports.ICalParser = class ICalParser
@@ -321,8 +693,8 @@ module.exports.ICalParser = class ICalParser
         class FakeStream extends require('events').EventEmitter
             readable: true
             writable: false
-            setEncoding: -> throw 'not implemented'
-            pipe: -> throw 'not implemented'
+            setEncoding: -> throw new Error 'not implemented'
+            pipe: -> throw new Error 'not implemented'
             destroy: ->  # nothing to do
             resume: ->   # nothing to do
             pause: ->    # nothing to do
@@ -375,22 +747,21 @@ module.exports.ICalParser = class ICalParser
             if tuple.length < 2
                 sendError "Malformed ical file"
             else
-                key = tuple[0]
-                tuple.shift()
-                value = tuple.join('')
+                key = tuple.shift()
+                value = tuple.join ':'
 
                 if key is "BEGIN"
                     createComponent value
                 else if key is "END"
+                    component.extract()
                     component = component.parent
                 else if not (component? or result?)
                     sendError "Malformed ical file"
                 else if key? and key isnt '' and component?
                     [key, details...] = key.split(';')
-                    component.fields[key] = value
+                    component.addRawField key, value, details
                     for detail in details
                         [pname, pvalue] = detail.split '='
-                        component.fields["#{key}-#{pname}"] = pvalue
                 else
                     sendError "Malformed ical file"
 
