@@ -44,7 +44,7 @@ module.exports = (Alarm) ->
 
         return vtodo
 
-    Alarm.fromIcal = (vtodo) ->
+    Alarm.fromIcal = (vtodo, defaultCalendar = 'my calendar') ->
         alarm = new Alarm()
         todoModel = vtodo.model
         alarm.id = todoModel.uid if todoModel.uid?
@@ -108,13 +108,13 @@ module.exports = (Alarm) ->
                 actions = actions.shift() if actions.length is 1
                 alarm.action = actions
 
-        alarm.tags = ['my calendar']
+        alarm.tags = [defaultCalendar]
         return alarm
 
-    Alarm.extractAlarms = (component) ->
+    Alarm.extractAlarms = (component, defaultCalendar = 'my calendar') ->
         alarms = []
         component.walk (component) ->
             if component.name is 'VTODO'
-                alarm = Alarm.fromIcal component
+                alarm = Alarm.fromIcal component, defaultCalendar
                 alarms.push alarm if alarm? # to skip unreadable VTodo.
         return alarms

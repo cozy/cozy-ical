@@ -63,7 +63,7 @@ module.exports = (Event) ->
         return event
 
     # Return a valid Event object, or undefined.
-    Event.fromIcal = (vevent) ->
+    Event.fromIcal = (vevent, defaultCalendar = 'my calendar') ->
         event = new Event()
         {model} = vevent
 
@@ -118,14 +118,14 @@ module.exports = (Event) ->
                 alarms.push trigg: trigg, action: action
 
         event.alarms = alarms if alarms
-        event.tags = ['my calendar']
+        event.tags = [defaultCalendar]
 
         return event
 
-    Event.extractEvents = (component) ->
+    Event.extractEvents = (component, defaultCalendar = 'my calendar') ->
         events = []
         component.walk (component) ->
             if component.name is 'VEVENT'
-                events.push Event.fromIcal component
+                events.push Event.fromIcal component, defaultCalendar
 
         return events
