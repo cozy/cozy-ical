@@ -1,6 +1,6 @@
 {
   "name": "cozy-ical",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Cozy-Ical provides ICal Parser, generators and helpers",
   "main": "src/index",
   "scripts": {
