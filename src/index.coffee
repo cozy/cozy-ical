@@ -581,8 +581,7 @@ module.exports.VEvent = class VEvent extends VComponent
         @model =
             uid: uid?.value or uuid.v1()
             stampDate: moment.tz(stampDate, UTCFormat, 'UTC').toDate()
-            startDate: moment.tz startDate, iCalFormat, timezoneStart
-                            .toDate()
+            startDate: moment.tz(startDate, iCalFormat, timezoneStart).toDate()
             endDate: endDate
             duration: duration
             attendees: attendees
