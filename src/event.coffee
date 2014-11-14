@@ -19,9 +19,8 @@ module.exports = (Event) ->
                 return undefined
 
         rrule = if @rrule? then RRule.parseString @rrule else null
-
-        attendees = @attendees?.map (attendee) -> attendee.email
-
+        mappedAttendees = @attendees?.map (attendee) ->
+            return email: attendee.email, status: attendee.status
         try
             event = new VEvent
                 stampDate: moment.tz moment(), 'UTC'
@@ -33,7 +32,7 @@ module.exports = (Event) ->
                 description: @details
                 allDay: allDay
                 rrule: rrule
-                attendee: attendees
+                attendees: mappedAttendees
                 timezone: @timezone
         catch e
             console.log 'Can\'t parse event mandatory fields.'
@@ -50,13 +49,14 @@ module.exports = (Event) ->
             if alarm.action in [VAlarm.EMAIL_ACTION, 'BOTH'] \
             and @getAlarmAttendeesEmail?
                 mappedAttendees = @getAlarmAttendeesEmail().map (email) ->
-                    return "mailto:#{email}"
+                    return email: email, status: 'ACCEPTED'
+                console.log mappedAttendees
                 event.add new VAlarm
                     trigger: alarm.trigg
                     action: VAlarm.EMAIL_ACTION
                     summary: @description
                     description: @details or ''
-                    attendee: mappedAttendees
+                    attendees: mappedAttendees
 
             # else : ignore other actions.
 
