@@ -8,6 +8,7 @@ moment = require 'moment-timezone'
 
 # mock classes
 Alarm = class Alarm
+    getAttendeesEmail: -> return ['test@cozycloud.cc']
 Event = class Event
     @dateFormat = 'YYYY-MM-DD'
     @ambiguousDTFormat = 'YYYY-MM-DD[T]HH:mm:00.000'
@@ -24,6 +25,7 @@ describe "Cozy models decorator", ->
         DTSTAMP:20141107T153700Z
         DTSTART;TZID=Europe/Paris:20141106T120000
         DTEND;TZID=Europe/Paris:20141106T130000
+        ATTENDEE;PARTSTAT=NEEDS-ACTION:mailto:test@cozycloud.cc
         DESCRIPTION:Crawling a hidden dungeon
         LOCATION:Hidden dungeon
         RRULE:FREQ=WEEKLY;INTERVAL=1;UNTIL=20150101T000000Z;BYDAY=TH
@@ -35,7 +37,8 @@ describe "Cozy models decorator", ->
         DTSTART:20141108T150000Z
         DTSTAMP:20141108T150000Z
         BEGIN:VALARM
-        ACTION:DISPLAY
+        ACTION:EMAIL
+        ATTENDEE:mailto:test@cozycloud.cc
         TRIGGER:PT0M
         DESCRIPTION:Something to remind
         END:VALARM
@@ -69,6 +72,10 @@ describe "Cozy models decorator", ->
             event.should.have.property 'alarms', []
             event.should.have.property 'timezone', 'Europe/Paris'
             event.should.have.property 'tags', ['my calendar']
+            event.should.have.property 'attendees'
+            event.attendees.length.should.equal 1
+            event.attendees[0].should.have.property 'email', 'test@cozycloud.cc'
+            event.attendees[0].should.have.property 'status', 'INVITATION-NOT-SENT'
 
         it "::toIcal should generate a proper vEvent based on Cozy Event", ->
             event = @events[0]
@@ -81,6 +88,7 @@ describe "Cozy models decorator", ->
                 DTSTAMP:#{now}
                 DTSTART;TZID=Europe/Paris:20141106T120000
                 DTEND;TZID=Europe/Paris:20141106T130000
+                ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=test@cozycloud.cc:mailto:test@cozycloud.cc
                 DESCRIPTION:Crawling a hidden dungeon
                 LOCATION:Hidden dungeon
                 RRULE:FREQ=WEEKLY;INTERVAL=1;UNTIL=20150101T000000Z;BYDAY=TH
@@ -185,8 +193,13 @@ describe "Cozy models decorator", ->
             alarm.should.have.property 'id', 'aeba6310b07a22a72423b2b11f320693'
             alarm.should.have.property 'description', 'Something to remind'
             alarm.should.have.property 'trigg', '2014-11-08T15:00:00.000Z'
-            alarm.should.have.property 'action', 'DISPLAY'
+            alarm.should.have.property 'action', 'EMAIL'
             alarm.should.have.property 'tags', ['my calendar']
+            alarm.should.have.property 'attendees'
+            alarm.attendees.length.should.equal 1
+            alarm.attendees[0].should.have.property 'email', 'test@cozycloud.cc'
+            alarm.attendees[0].should.have.property 'details'
+            alarm.attendees[0].details.should.have.property 'status', 'NEEDS-ACTION'
 
         it "::toIcal should generate a proper vEvent based on Cozy Event", ->
             alarm = @alarms[0]
@@ -200,9 +213,11 @@ describe "Cozy models decorator", ->
                 DTSTART:20141108T150000Z
                 SUMMARY:Something to remind
                 BEGIN:VALARM
-                ACTION:DISPLAY
+                ACTION:EMAIL
                 TRIGGER:PT0M
+                ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=test@cozycloud.cc:mailto:test@cozycloud.cc
                 DESCRIPTION:Something to remind
+                SUMMARY:Something to remind
                 END:VALARM
                 END:VTODO
                 """.replace /\n/g, '\r\n'

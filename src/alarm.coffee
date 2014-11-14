@@ -34,11 +34,12 @@ module.exports = (Alarm) ->
 
         if @action in ['EMAIL', 'BOTH'] and @getAttendeesEmail?
             mappedAttendees = @getAttendeesEmail().map (email) ->
-                return "mailto:#{email}"
+                return email: email, status: 'ACCEPTED'
+
             vtodo.addAlarm
                 action: 'EMAIL'
                 description: @description
-                attendee: mappedAttendees
+                attendees: mappedAttendees
                 summary: @description
                 trigger: 'PT0M'
 
@@ -107,6 +108,8 @@ module.exports = (Alarm) ->
             else
                 actions = actions.shift() if actions.length is 1
                 alarm.action = actions
+
+            alarm.attendees = valarms[0].model.attendees
 
         alarm.tags = [defaultCalendar]
         return alarm

@@ -237,7 +237,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
 
         attendees = @getRawField 'ATTENDEE', true
         attendees = attendees?.map (attendee) ->
-            return attendee.value.replace 'mailto:', ''
+            email = attendee.value.replace 'mailto:', ''
 
             # extracts additional values if they exist
             if attendee.details?.length > 0
@@ -273,13 +273,13 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 description = @parent?.getRawField('SUMMARY')?.value or ''
 
         else if action is VAlarm.EMAIL_ACTION
-            unless @model.description?
+            unless description?
                 description = @parent?.getRawField('DESCRIPTION')?.value or ''
 
-            unless @model.summary?
+            unless summary?
                 summary = @parent?.getRawField('SUMMARY')?.value or ''
 
-            unless @model.attendees?
+            unless attendees?
                 attendees = []
 
         @model =
