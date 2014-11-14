@@ -2,7 +2,7 @@
   "name": "cozy-ical",
   "version": "1.0.1",
   "description": "Cozy-Ical provides ICal Parser, generators and helpers",
-  "main": "src/index",
+  "main": "lib/index",
   "scripts": {
     "test": "cake tests",
     "build": "coffee -cb --output lib/ src/",
