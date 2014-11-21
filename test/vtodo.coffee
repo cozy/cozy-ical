@@ -51,7 +51,7 @@ describe "vTodo", ->
                 uid: 'abcd-1234'
                 stampDate: new Date 2014, 11, 4, 9, 30
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
 
             todo = new VTodo options
             output = todo.toString()
@@ -67,7 +67,7 @@ describe "vTodo", ->
                 uid: 'abcd-1234'
                 stampDate: new Date 2014, 11, 4, 9, 30
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
 
             todo = new VTodo options
 

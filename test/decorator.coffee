@@ -81,11 +81,10 @@ describe "Cozy models decorator", ->
             event = @events[0]
             should.exist event
             vEvent = event.toIcal()
-            now = moment.tz(moment(), 'UTC').format VEvent.icalDTUTCFormat
             vEvent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:aeba6310b07a22a72423b2b11f320692
-                DTSTAMP:#{now}
+                DTSTAMP:20141107T153700Z
                 DTSTART;TZID=Europe/Paris:20141106T120000
                 DTEND;TZID=Europe/Paris:20141106T130000
                 ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=test@cozycloud.cc:mailto:test@cozycloud.cc
@@ -205,11 +204,10 @@ describe "Cozy models decorator", ->
             alarm = @alarms[0]
             should.exist alarm
             vTodo = alarm.toIcal()
-            now = moment.tz(moment(), 'UTC').format VTodo.icalDTUTCFormat
             vTodo.toString().should.equal """
                 BEGIN:VTODO
                 UID:aeba6310b07a22a72423b2b11f320693
-                DTSTAMP:#{now}
+                DTSTAMP:20141108T150000Z
                 DTSTART:20141108T150000Z
                 SUMMARY:Something to remind
                 BEGIN:VALARM

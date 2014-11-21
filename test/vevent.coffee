@@ -58,8 +58,10 @@ describe "vEvent", ->
                 endDate: new Date 2014, 11, 4, 10, 30
                 summary: 'Event summary'
                 location: 'some place'
+                created: '20141110T140000.000Z'
+                lastModification: '20141121T133000.000Z'
             formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
@@ -84,7 +86,7 @@ describe "vEvent", ->
                 summary: 'Event summary'
                 timezone: 'Europe/Paris'
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -110,7 +112,7 @@ describe "vEvent", ->
                 location: 'some place'
                 allDay: true
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -155,7 +157,7 @@ describe "vEvent", ->
                 until: ruleOptions.until
                 byweekday: ruleOptions.byweekday
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -194,7 +196,7 @@ describe "vEvent", ->
                 freq: ruleOptions.freq
                 until: ruleOptions.until
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -222,7 +224,7 @@ describe "vEvent", ->
                     email: 'test@provider.tld', details: status: 'NEEDS-ACTION'
                 ]
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00Z]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -256,7 +258,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T150000Z
+                DTSTAMP:20130609T130000Z
                 DTSTART;TZID=Europe/Moscow:20130609T150000
                 DTEND;TZID=Europe/Moscow:20130610T150000
                 LOCATION:loc
@@ -278,7 +280,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T150000Z
+                DTSTAMP:20130609T130000Z
                 DTSTART;TZID=Europe/Moscow:20130609T150000
                 DTEND;TZID=Europe/Moscow:20130610T150000
                 LOCATION:loc
@@ -302,7 +304,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T150000Z
+                DTSTAMP:20130609T130000Z
                 DTSTART;VALUE=DATE:20130609
                 DTEND;VALUE=DATE:20130610
                 LOCATION:loc

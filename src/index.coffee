@@ -317,7 +317,7 @@ module.exports.VTodo = class VTodo extends VComponent
     build: ->
         super()
         # Formats stamp date to valid iCal date
-        stampDate = moment @model.stampDate
+        stampDate = moment.tz @model.stampDate, 'UTC'
 
         # Adds UID and DTSTAMP fields
         @addRawField 'UID', @model.uid
@@ -337,7 +337,7 @@ module.exports.VTodo = class VTodo extends VComponent
     extract: ->
         super()
 
-        stampDate = @getRawField('DTSTAMP')?.value or moment()
+        stampDate = @getRawField('DTSTAMP')?.value or moment().tz('UTC')
 
         startDate = @getRawField('DTSTART')?.value
         due = @getRawField('DUE')?.value
@@ -359,10 +359,9 @@ module.exports.VTodo = class VTodo extends VComponent
         else if not startDate? and duration?
             startDate = moment.tz moment(), 'UTC'
 
-
         @model =
             uid: @getRawField('UID')?.value or uuid.v1()
-            stampDate: moment(stampDate).toDate()
+            stampDate: moment.tz(stampDate, VTodo.icalDTUTCFormat, 'UTC').toDate()
             description: @getRawField('DESCRIPTION')?.value or ''
             startDate: startDate.toDate()
             due: due
@@ -462,7 +461,7 @@ module.exports.VEvent = class VEvent extends VComponent
             rrule = new RRule(@model.rrule).toString()
 
         # Formats stamp date to valid iCal date
-        stampDate = moment @model.stampDate
+        stampDate = moment.tz @model.stampDate, 'UTC'
         # Adds UID and DTSTAMP fields
         @addRawField 'UID', @model.uid
         @addRawField 'DTSTAMP', stampDate.format VEvent.icalDTUTCFormat
@@ -514,7 +513,6 @@ module.exports.VEvent = class VEvent extends VComponent
         endDate = dtend?.value or null
         duration = @getRawField('DURATION')?.value or null
 
-        UTCFormat =  'YYYYMMDDTHHmmss[Z]'
         iCalFormat = 'YYYYMMDDTHHmmss'
         # can't have both at the same time, drop duration if it's the case
         if endDate? and duration?
@@ -580,7 +578,7 @@ module.exports.VEvent = class VEvent extends VComponent
 
         @model =
             uid: uid?.value or uuid.v1()
-            stampDate: moment.tz(stampDate, UTCFormat, 'UTC').toDate()
+            stampDate: moment.tz(stampDate, VEvent.icalDTUTCFormat, 'UTC').toDate()
             startDate: moment.tz(startDate, iCalFormat, timezoneStart).toDate()
             endDate: endDate
             duration: duration
