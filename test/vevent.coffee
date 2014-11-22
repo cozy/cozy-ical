@@ -251,7 +251,7 @@ describe "vEvent", ->
             startDate.setTimezone 'Europe/Moscow'
             endDate.setTimezone 'Europe/Moscow'
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"
@@ -260,7 +260,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T130000Z
+                DTSTAMP:20130609T150000Z
                 DTSTART;TZID=Europe/Moscow:20130609T150000
                 DTEND;TZID=Europe/Moscow:20130610T150000
                 LOCATION:loc
@@ -271,7 +271,7 @@ describe "vEvent", ->
             startDate = new time.Date 2013, 5, 9, 15, 0, 0
             endDate = new time.Date 2013, 5, 10, 15, 0, 0
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"
@@ -282,7 +282,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T130000Z
+                DTSTAMP:20130609T150000Z
                 DTSTART;TZID=Europe/Moscow:20130609T150000
                 DTEND;TZID=Europe/Moscow:20130610T150000
                 LOCATION:loc
@@ -295,7 +295,7 @@ describe "vEvent", ->
             startDate.setTimezone 'Europe/Moscow'
             endDate.setTimezone 'Europe/Moscow'
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"
@@ -306,7 +306,7 @@ describe "vEvent", ->
             vevent.toString().should.equal """
                 BEGIN:VEVENT
                 UID:3615
-                DTSTAMP:20130609T130000Z
+                DTSTAMP:20130609T150000Z
                 DTSTART;VALUE=DATE:20130609
                 DTEND;VALUE=DATE:20130610
                 LOCATION:loc

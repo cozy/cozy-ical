@@ -461,7 +461,7 @@ module.exports.VEvent = class VEvent extends VComponent
             rrule = new RRule(@model.rrule).toString()
 
         # Formats stamp date to valid iCal date
-        stampDate = moment.tz @model.stampDate, 'UTC'
+        stampDate = moment(@model.stampDate).tz 'UTC'
         # Adds UID and DTSTAMP fields
         @addRawField 'UID', @model.uid
         @addRawField 'DTSTAMP', stampDate.format VEvent.icalDTUTCFormat
