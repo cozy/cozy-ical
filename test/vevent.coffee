@@ -58,8 +58,10 @@ describe "vEvent", ->
                 endDate: new Date 2014, 11, 4, 10, 30
                 summary: 'Event summary'
                 location: 'some place'
+                created: '2014-11-10T14:00:00.000Z'
+                lastModification: '2014-11-21T13:30:00.000Z'
             formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
@@ -70,6 +72,8 @@ describe "vEvent", ->
                 DTSTAMP:#{formattedStampDate}
                 DTSTART:#{formattedStartDate}
                 DTEND:#{formattedEndDate}
+                CREATED:20141110T140000Z
+                LAST-MOD:20141121T133000Z
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
@@ -84,7 +88,7 @@ describe "vEvent", ->
                 summary: 'Event summary'
                 timezone: 'Europe/Paris'
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -110,7 +114,7 @@ describe "vEvent", ->
                 location: 'some place'
                 allDay: true
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -155,7 +159,7 @@ describe "vEvent", ->
                 until: ruleOptions.until
                 byweekday: ruleOptions.byweekday
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -194,7 +198,7 @@ describe "vEvent", ->
                 freq: ruleOptions.freq
                 until: ruleOptions.until
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -222,7 +226,7 @@ describe "vEvent", ->
                     email: 'test@provider.tld', details: status: 'NEEDS-ACTION'
                 ]
 
-            formattedStampDate = moment(options.stampDate).format DTSTAMP_FORMATTER
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formatter = 'YYYYMMDD[T]HHmm[00Z]'
             formattedStartDate = moment(options.startDate).format formatter
             formattedEndDate = moment(options.endDate).format formatter
@@ -247,7 +251,7 @@ describe "vEvent", ->
             startDate.setTimezone 'Europe/Moscow'
             endDate.setTimezone 'Europe/Moscow'
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"
@@ -267,7 +271,7 @@ describe "vEvent", ->
             startDate = new time.Date 2013, 5, 9, 15, 0, 0
             endDate = new time.Date 2013, 5, 10, 15, 0, 0
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"
@@ -291,7 +295,7 @@ describe "vEvent", ->
             startDate.setTimezone 'Europe/Moscow'
             endDate.setTimezone 'Europe/Moscow'
             vevent = new VEvent
-                stampDate: new Date 2013, 5, 9, 15
+                stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
                 endDate: endDate
                 summary: "desc"

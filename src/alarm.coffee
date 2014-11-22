@@ -23,7 +23,7 @@ module.exports = (Alarm) ->
         vtodo = new VTodo
             startDate: startDate
             uid: @id
-            stampDate: moment.tz moment(), 'UTC'
+            stampDate: moment().tz('UTC').toDate()
             summary: @description
 
         if @action in ['DISPLAY', 'BOTH']
