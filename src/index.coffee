@@ -478,15 +478,26 @@ module.exports.VEvent = class VEvent extends VComponent
                 details += ";CN=#{name}"
                 @addRawField "ATTENDEE#{details}", "mailto:#{attendee.email}"
 
+        if @model.lastModification?
+            lastModification = moment.tz @model.lastModification, 'UTC'
+                                .format VEvent.icalDTUTCFormat
+
+        if @model.created?
+            created = moment.tz @model.created, 'UTC'
+                                .format VEvent.icalDTUTCFormat
+
         @addRawField 'CATEGORIES', @model.categories or null
+        @addRawField 'CREATED', created or null
         @addRawField 'DESCRIPTION', @model.description or null
         @addRawField 'DURATION', @model.duration or null
+        @addRawField 'LAST-MOD', lastModification or null
         @addRawField 'LOCATION', @model.location or null
         @addRawField 'ORGANIZER', @model.organizer or null
         @addRawField 'RRULE', rrule or null
         @addRawField 'SUMMARY', @model.summary or null
 
     extract: ->
+        iCalFormat = 'YYYYMMDDTHHmmss'
         uid = @getRawField 'UID'
         stampDate = @getRawField('DTSTAMP')?.value or moment()
 
@@ -513,7 +524,6 @@ module.exports.VEvent = class VEvent extends VComponent
         endDate = dtend?.value or null
         duration = @getRawField('DURATION')?.value or null
 
-        iCalFormat = 'YYYYMMDDTHHmmss'
         # can't have both at the same time, drop duration if it's the case
         if endDate? and duration?
             duration = null
@@ -576,6 +586,18 @@ module.exports.VEvent = class VEvent extends VComponent
                 details = status: 'NEEDS-ACTION', name: email
             return {email, details}
 
+        # Put back in the right format
+        lastModification = @getRawField('LAST-MOD')?.value
+        if lastModification?
+            lastModification = moment.tz lastModification, VEvent.icalDTUTCFormat, 'UTC'
+                                .toISOString()
+
+        # Put back in the right format
+        created = @getRawField('CREATED')?.value
+        if created?
+            created = moment.tz created, VEvent.icalDTUTCFormat, 'UTC'
+                        .toISOString()
+
         @model =
             uid: uid?.value or uuid.v1()
             stampDate: moment.tz(stampDate, VEvent.icalDTUTCFormat, 'UTC').toDate()
@@ -591,6 +613,8 @@ module.exports.VEvent = class VEvent extends VComponent
             summary: @getRawField('SUMMARY')?.value or null
             allDay: allDay or null
             timezone: timezone or null
+            lastModification: lastModification or null
+            created: created or null
 
 # @param options { startDate, timezone }
 module.exports.VTimezone = class VTimezone extends VComponent

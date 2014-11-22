@@ -21,9 +21,15 @@ module.exports = (Event) ->
         rrule = if @rrule? then RRule.parseString @rrule else null
         mappedAttendees = @attendees?.map (attendee) ->
             return email: attendee.email, status: attendee.status
+
+        created = @created or null
+        lastModification = @lastModification or null
+        stampDate = @lastModification or moment().tz('UTC')
+        stampDate = moment.tz(stampDate, 'UTC').toDate()
+
         try
             event = new VEvent
-                stampDate: moment.tz moment(), 'UTC'
+                stampDate: stampDate
                 startDate: moment.tz @start, timezone
                 endDate: moment.tz @end, timezone
                 summary: @description
@@ -34,6 +40,8 @@ module.exports = (Event) ->
                 rrule: rrule
                 attendees: mappedAttendees
                 timezone: @timezone
+                created: created
+                lastModification: lastModification
         catch e
             console.log 'Can\'t parse event mandatory fields.'
             console.log e
@@ -67,6 +75,8 @@ module.exports = (Event) ->
         event = new Event()
         {model} = vevent
 
+        now =  moment().tz('UTC').toISOString()
+
         timezone = model.timezone or 'UTC'
         event.id = model.uid if model.uid?
         event.description = model.summary or ''
@@ -81,6 +91,11 @@ module.exports = (Event) ->
             id = index + 1
             contactid = null
             return {id, email, contactid, status}
+        event.created = model.created if model.created?
+        stampDate = moment.tz(model.stampDate, 'UTC').toISOString()
+        event.lastModification = model.lastModification \
+                                 or stampDate \
+                                 or now
 
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'

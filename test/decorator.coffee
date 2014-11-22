@@ -72,6 +72,7 @@ describe "Cozy models decorator", ->
             event.should.have.property 'alarms', []
             event.should.have.property 'timezone', 'Europe/Paris'
             event.should.have.property 'tags', ['my calendar']
+            event.should.have.property 'lastModification', '2014-11-07T15:37:00.000Z'
             event.should.have.property 'attendees'
             event.attendees.length.should.equal 1
             event.attendees[0].should.have.property 'email', 'test@cozycloud.cc'
@@ -89,6 +90,7 @@ describe "Cozy models decorator", ->
                 DTEND;TZID=Europe/Paris:20141106T130000
                 ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=test@cozycloud.cc:mailto:test@cozycloud.cc
                 DESCRIPTION:Crawling a hidden dungeon
+                LAST-MOD:20141107T153700Z
                 LOCATION:Hidden dungeon
                 RRULE:FREQ=WEEKLY;INTERVAL=1;UNTIL=20150101T000000Z;BYDAY=TH
                 SUMMARY:Recurring event
@@ -204,10 +206,11 @@ describe "Cozy models decorator", ->
             alarm = @alarms[0]
             should.exist alarm
             vTodo = alarm.toIcal()
+            now = moment().tz('UTC').format "YYYYMMDD[T]HHmm[00Z]"
             vTodo.toString().should.equal """
                 BEGIN:VTODO
                 UID:aeba6310b07a22a72423b2b11f320693
-                DTSTAMP:20141108T150000Z
+                DTSTAMP:#{now}
                 DTSTART:20141108T150000Z
                 SUMMARY:Something to remind
                 BEGIN:VALARM

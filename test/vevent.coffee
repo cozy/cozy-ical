@@ -58,8 +58,8 @@ describe "vEvent", ->
                 endDate: new Date 2014, 11, 4, 10, 30
                 summary: 'Event summary'
                 location: 'some place'
-                created: '20141110T140000.000Z'
-                lastModification: '20141121T133000.000Z'
+                created: '2014-11-10T14:00:00.000Z'
+                lastModification: '2014-11-21T13:30:00.000Z'
             formatter = 'YYYYMMDD[T]HHmm[00Z]'
             formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
             formattedStartDate = moment(options.startDate).format formatter
@@ -72,6 +72,8 @@ describe "vEvent", ->
                 DTSTAMP:#{formattedStampDate}
                 DTSTART:#{formattedStartDate}
                 DTEND:#{formattedEndDate}
+                CREATED:20141110T140000Z
+                LAST-MOD:20141121T133000Z
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
