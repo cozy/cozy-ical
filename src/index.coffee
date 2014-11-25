@@ -11,7 +11,6 @@ VALID_TZ_LIST = moment.tz.names()
 FieldDependencyError, InvalidValueError} = require './errors'
 helpers = require './helpers'
 
-module.exports.decorateAlarm = require './alarm'
 module.exports.decorateEvent = require './event'
 
 # Small module to generate iCal file from JS Objects or to parse iCal file
