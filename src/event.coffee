@@ -5,11 +5,10 @@ module.exports = (Event) ->
     {VCalendar, VEvent, VAlarm} = require './index'
 
     # Return VEvent object or undefined if mandatory elements miss.
-    Event::toIcal = ->
+    Event::toIcal = (timezone = 'UTC') ->
         allDay = @start.length is 10
 
-        # Stay in event locale timezone for recurring events.
-        timezone = 'UTC' # Default for non recurring events.
+        # Recurring events must be in local timezone.
         if @rrule
             if @timezone?
                 timezone = @timezone
@@ -17,6 +16,8 @@ module.exports = (Event) ->
             else if not allDay
                 console.log "Recurring events need timezone."
                 return undefined
+
+        timezone = @timezone or timezone
 
         rrule = if @rrule? then RRule.parseString @rrule else null
         mappedAttendees = @attendees?.map (attendee) ->
@@ -39,7 +40,7 @@ module.exports = (Event) ->
                 allDay: allDay
                 rrule: rrule
                 attendees: mappedAttendees
-                timezone: @timezone
+                timezone: timezone
                 created: created
                 lastModification: lastModification
         catch e
