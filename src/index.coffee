@@ -424,7 +424,7 @@ module.exports.VEvent = class VEvent extends VComponent
         # punctual event
         else
             # if timezone is specified with options
-            if @model.timezone
+            if @model.timezone and @model.timezone isnt 'UTC'
                 # format is a date-time with no trailing Z
                 formatStart = formatEnd = VEvent.icalDTFormat
                 timezoneStart = timezoneEnd = @model.timezone
