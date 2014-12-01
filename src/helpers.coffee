@@ -20,6 +20,6 @@ module.exports.unescapeText = (t) ->
     if not t?
         return t
     s = t.replace /\\n/g, '\n'
-    s = t.replace /\\([,;\\])/ig, "$1"
+    s = s.replace /\\([,;\\])/ig, "$1"
     
     return s
