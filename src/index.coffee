@@ -4,6 +4,7 @@ lazy = require 'lazy'
 extend = require 'extend'
 uuid = require 'uuid'
 {RRule} = require 'rrule'
+H = require './helpers'
 
 VALID_TZ_LIST = moment.tz.names()
 
@@ -93,6 +94,9 @@ module.exports.VComponent = class VComponent
     addRawField: (key, value, details = {}) ->
         @rawFields.push {key, value, details}
 
+    addTextField: (key, value, details = {}) ->
+        @addRawField key, H.escapeText(value), details
+
     getRawField: (key, findMany = false) ->
 
         defaultResult = if findMany then [] else null
@@ -105,6 +109,11 @@ module.exports.VComponent = class VComponent
                     return field if field.key
 
         return defaultResult
+
+    getTextFieldValue: (key, defaults) ->
+        field = @getRawField key, false
+        return H.unescapeText field?.value or defaults
+
 
 # Calendar component. It's the representation of the root object of a Calendar.
 # @param options { organization, title }
@@ -222,17 +231,17 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 details += ";CN=#{name}"
                 fieldValue = "mailto:#{attendee.email}"
                 @addRawField "ATTENDEE#{details}", fieldValue, details
-        @addRawField 'DESCRIPTION', @model.description
+        @addTextField 'DESCRIPTION', @model.description
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'REPEAT', @model.repeat or null
-        @addRawField 'SUMMARY', @model.summary
+        @addTextField 'SUMMARY', @model.summary
 
     extract: ->
         super()
 
         trigger = @getRawField('TRIGGER')?.value or null
 
-        description = @getRawField('DESCRIPTION')?.value
+        description = @getTextFieldValue 'DESCRIPTION'
 
         attendees = @getRawField 'ATTENDEE', true
         attendees = attendees?.map (attendee) ->
@@ -252,7 +261,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 details = status: 'NEEDS-ACTION', name: email
             return {email, details}
 
-        summary = @getRawField('SUMMARY')?.value
+        summary = @getTextFieldValue 'SUMMARY'
 
         expected = [
             VAlarm.DISPLAY_ACTION
@@ -264,19 +273,19 @@ module.exports.VAlarm = class VAlarm extends VComponent
         if action not in expected
             action = VAlarm.DISPLAY_ACTION
             unless description?
-                description = @parent?.getRawField('SUMMARY')?.value or ''
+                description = @parent?.getTextFieldValue 'SUMMARY', ''
 
         # It must have mandatory fields filled based on action
         else if action is VAlarm.DISPLAY_ACTION
             unless description?
-                description = @parent?.getRawField('SUMMARY')?.value or ''
+                description = @parent?.getTextFieldValue 'SUMMARY', ''
 
         else if action is VAlarm.EMAIL_ACTION
             unless description?
-                description = @parent?.getRawField('DESCRIPTION')?.value or ''
+                description = @parent?.getTextFieldValue 'DESCRIPTION', ''
 
             unless summary?
-                summary = @parent?.getRawField('SUMMARY')?.value or ''
+                summary = @parent?.getTextFieldValue 'SUMMARY', ''
 
             unless attendees?
                 attendees = []
@@ -327,11 +336,11 @@ module.exports.VTodo = class VTodo extends VComponent
             startDate = moment @model.startDate
             formattedStartDate = startDate.format VTodo.icalDTUTCFormat
 
-        @addRawField 'DESCRIPTION', @model.description or null
+        @addTextField 'DESCRIPTION', @model.description or null
         @addRawField 'DTSTART', formattedStartDate or null
         @addRawField 'DUE', @model.due or null
         @addRawField 'DURATION', @model.duration or null
-        @addRawField 'SUMMARY', @model.summary or null
+        @addTextField 'SUMMARY', @model.summary or null
 
     extract: ->
         super()
@@ -361,11 +370,11 @@ module.exports.VTodo = class VTodo extends VComponent
         @model =
             uid: @getRawField('UID')?.value or uuid.v1()
             stampDate: moment.tz(stampDate, VTodo.icalDTUTCFormat, 'UTC').toDate()
-            description: @getRawField('DESCRIPTION')?.value or ''
+            description: @getTextFieldValue 'DESCRIPTION', ''
             startDate: startDate.toDate()
             due: due
             duration: duration
-            summary: @getRawField('SUMMARY')?.value or ''
+            summary: @getTextFieldValue 'SUMMARY', ''
             timezone: timezone
 
     # @param options { action, description, attendee, summary }
@@ -487,13 +496,13 @@ module.exports.VEvent = class VEvent extends VComponent
 
         @addRawField 'CATEGORIES', @model.categories or null
         @addRawField 'CREATED', created or null
-        @addRawField 'DESCRIPTION', @model.description or null
+        @addTextField 'DESCRIPTION', @model.description or null
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'LAST-MOD', lastModification or null
-        @addRawField 'LOCATION', @model.location or null
+        @addTextField 'LOCATION', @model.location or null
         @addRawField 'ORGANIZER', @model.organizer or null
         @addRawField 'RRULE', rrule or null
-        @addRawField 'SUMMARY', @model.summary or null
+        @addTextField 'SUMMARY', @model.summary or null
 
     extract: ->
         iCalFormat = 'YYYYMMDDTHHmmss'
@@ -605,11 +614,11 @@ module.exports.VEvent = class VEvent extends VComponent
             duration: duration
             attendees: attendees
             categories: @getRawField('CATEGORIES')?.value or null
-            description: @getRawField('DESCRIPTION')?.value or null
-            location: @getRawField('LOCATION')?.value or null
+            description: @getTextFieldValue 'DESCRIPTION', null
+            location: @getTextFieldValue 'LOCATION', null
             organizer: @getRawField('ORGANIZER')?.value or null
             rrule: rruleOptions or null
-            summary: @getRawField('SUMMARY')?.value or null
+            summary: @getTextFieldValue 'SUMMARY', null
             allDay: allDay or null
             timezone: timezone or null
             lastModification: lastModification or null
