@@ -4,7 +4,6 @@ lazy = require 'lazy'
 extend = require 'extend'
 uuid = require 'uuid'
 {RRule} = require 'rrule'
-H = require './helpers'
 
 VALID_TZ_LIST = moment.tz.names()
 
@@ -95,7 +94,7 @@ module.exports.VComponent = class VComponent
         @rawFields.push {key, value, details}
 
     addTextField: (key, value, details = {}) ->
-        @addRawField key, H.escapeText(value), details
+        @addRawField key, helpers.escapeText(value), details
 
     getRawField: (key, findMany = false) ->
 
@@ -112,7 +111,7 @@ module.exports.VComponent = class VComponent
 
     getTextFieldValue: (key, defaults) ->
         field = @getRawField key, false
-        return H.unescapeText field?.value or defaults
+        return helpers.unescapeText field?.value or defaults
 
 
 # Calendar component. It's the representation of the root object of a Calendar.

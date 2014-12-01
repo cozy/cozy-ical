@@ -49,7 +49,7 @@ describe "vEvent", ->
             wrapper = -> event = new VEvent options
             wrapper.should.throw FieldConflictError
 
-    describe "Creating a vEvent on punctual event without timezone", ->
+    describe "Creating a vEvent for punctual event without timezone", ->
         it "should render properly", ->
             options =
                 uid: '[id-1]'
