@@ -111,7 +111,8 @@ module.exports.VComponent = class VComponent
 
     getTextFieldValue: (key, defaults) ->
         field = @getRawField key, false
-        return helpers.unescapeText field?.value or defaults
+        value = helpers.unescapeText field?.value
+        return value or defaults
 
 
 # Calendar component. It's the representation of the root object of a Calendar.
