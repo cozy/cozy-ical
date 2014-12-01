@@ -49,7 +49,7 @@ describe "vEvent", ->
             wrapper = -> event = new VEvent options
             wrapper.should.throw FieldConflictError
 
-    describe "Creating a vEvent for on punctual event without timezone", ->
+    describe "Creating a vEvent for punctual event without timezone", ->
         it "should render properly", ->
             options =
                 uid: '[id-1]'
@@ -311,4 +311,35 @@ describe "vEvent", ->
                 DTEND;VALUE=DATE:20130610
                 LOCATION:loc
                 SUMMARY:desc
+                END:VEVENT""".replace /\n/g, '\r\n'
+
+    describe "Creating a vEvent with multiline DESCRIPTION", ->
+        it "should render properly", ->
+            options =
+                uid: '[id-1]'
+                stampDate: new Date 2014, 11, 4, 9, 30
+                startDate: new Date 2014, 11, 4, 9, 30
+                endDate: new Date 2014, 11, 4, 10, 30
+                summary: 'Event summary, should escape ";"'
+                location: 'some place'
+                description: 'Event description on, \n line 2,\n line 3.'
+                created: '2014-11-10T14:00:00.000Z'
+                lastModification: '2014-11-21T13:30:00.000Z'
+            formatter = 'YYYYMMDD[T]HHmm[00Z]'
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
+            formattedStartDate = moment(options.startDate).format formatter
+            formattedEndDate = moment(options.endDate).format formatter
+            event = new VEvent options
+            output = event.toString()
+            output.should.equal """
+                BEGIN:VEVENT
+                UID:#{options.uid}
+                DTSTAMP:#{formattedStampDate}
+                DTSTART:#{formattedStartDate}
+                DTEND:#{formattedEndDate}
+                CREATED:20141110T140000Z
+                DESCRIPTION:Event description on\\, \\n line 2\\,\\n line 3.
+                LAST-MOD:20141121T133000Z
+                LOCATION:#{options.location}
+                SUMMARY:Event summary\\, should escape "\\;"
                 END:VEVENT""".replace /\n/g, '\r\n'
