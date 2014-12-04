@@ -90,7 +90,7 @@ describe "Cozy models decorator", ->
                 DTEND;TZID=Europe/Paris:20141106T130000
                 ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=test@cozycloud.cc:mailto:test@cozycloud.cc
                 DESCRIPTION:Crawling a hidden dungeon
-                LAST-MOD:20141107T153700Z
+                LAST-MODIFIED:20141107T153700Z
                 LOCATION:Hidden dungeon
                 RRULE:FREQ=WEEKLY;INTERVAL=1;UNTIL=20150101T000000Z;BYDAY=TH
                 SUMMARY:Recurring event

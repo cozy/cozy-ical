@@ -73,7 +73,7 @@ describe "vEvent", ->
                 DTSTART:#{formattedStartDate}
                 DTEND:#{formattedEndDate}
                 CREATED:20141110T140000Z
-                LAST-MOD:20141121T133000Z
+                LAST-MODIFIED:20141121T133000Z
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
@@ -339,7 +339,7 @@ describe "vEvent", ->
                 DTEND:#{formattedEndDate}
                 CREATED:20141110T140000Z
                 DESCRIPTION:Event description on\\, \\n line 2\\,\\n line 3.
-                LAST-MOD:20141121T133000Z
+                LAST-MODIFIED:20141121T133000Z
                 LOCATION:#{options.location}
                 SUMMARY:Event summary\\, should escape "\\;"
                 END:VEVENT""".replace /\n/g, '\r\n'
