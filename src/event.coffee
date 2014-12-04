@@ -43,6 +43,8 @@ module.exports = (Event) ->
                 timezone: timezone
                 created: created
                 lastModification: lastModification
+                mozLastack: @mozLastack
+
         catch e
             console.log 'Can\'t parse event mandatory fields.'
             console.log e
@@ -59,7 +61,6 @@ module.exports = (Event) ->
             and @getAlarmAttendeesEmail?
                 mappedAttendees = @getAlarmAttendeesEmail().map (email) ->
                     return email: email, status: 'ACCEPTED'
-                console.log mappedAttendees
                 event.add new VAlarm
                     trigger: alarm.trigg
                     action: VAlarm.EMAIL_ACTION
@@ -97,6 +98,7 @@ module.exports = (Event) ->
         event.lastModification = model.lastModification \
                                  or stampDate \
                                  or now
+        event.mozLastack = model.mozLastack
 
         if model.allDay
             event.start = moment.tz model.startDate, 'UTC'
