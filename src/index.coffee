@@ -145,6 +145,10 @@ module.exports.VCalendar = class VCalendar extends VComponent
         @addRawField 'VERSION', '2.0'
         @addRawField 'PRODID', prodid
 
+        if @model.name
+            @addTextField 'X-WR-CALNAME', @model.name
+
+
     extract: ->
         super()
         {value} = @getRawField 'PRODID'
@@ -157,7 +161,9 @@ module.exports.VCalendar = class VCalendar extends VComponent
             organization = 'Undefined organization'
             title = 'Undefined title'
 
-        @model = {organization, title}
+        name = @getTextFieldValue 'X-WR-CALNAME'
+
+        @model = {organization, title, name}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
     # anyway to support them if necessary in future"
