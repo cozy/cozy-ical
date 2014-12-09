@@ -1,6 +1,5 @@
 fs = require 'fs'
 moment = require 'moment-timezone'
-lazy = require 'lazy'
 extend = require 'extend'
 uuid = require 'uuid'
 {RRule} = require 'rrule'
