@@ -36,7 +36,6 @@
   "dependencies": {
     "moment-timezone": "0.2.4",
     "rrule": "2.1.0",
-    "lazy": "1.0.11",
     "printit": "0.1.3",
     "extend": "2.0.0",
     "uuid": "^2.0.1"

@@ -1,6 +1,5 @@
 fs = require 'fs'
 moment = require 'moment-timezone'
-lazy = require 'lazy'
 extend = require 'extend'
 uuid = require 'uuid'
 {RRule} = require 'rrule'
@@ -145,6 +144,9 @@ module.exports.VCalendar = class VCalendar extends VComponent
         @addRawField 'VERSION', '2.0'
         @addRawField 'PRODID', prodid
 
+        if @model.name
+            @addTextField 'X-WR-CALNAME', @model.name
+
     extract: ->
         super()
         {value} = @getRawField 'PRODID'
@@ -157,7 +159,9 @@ module.exports.VCalendar = class VCalendar extends VComponent
             organization = 'Undefined organization'
             title = 'Undefined title'
 
-        @model = {organization, title}
+        name = @getTextFieldValue 'X-WR-CALNAME'
+
+        @model = {organization, title, name}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
     # anyway to support them if necessary in future"
@@ -734,97 +738,150 @@ module.exports.ICalParser = class ICalParser
         STANDARD: VStandard
         DAYLIGHT: VDaylight
 
+    constructor: ->
+        @result = {}
+        @noerror = true
+        @lineNumber = 0
+        @component = null
+        @parent = null
+        @completeLine = null
+
     parseFile: (file, callback) ->
-        @parse fs.createReadStream(file), callback
+        @parsingCallback = callback
+
+        rlStream = new ReadLineStream()
+        rlStream.createReadLineStream fs.createReadStream(file), @_processLine, @_onEnd
+        
 
     parseString: (string, callback) ->
-        class FakeStream extends require('events').EventEmitter
-            readable: true
-            writable: false
-            setEncoding: -> throw new Error 'not implemented'
-            pipe: -> throw new Error 'not implemented'
-            destroy: ->  # nothing to do
-            resume: ->   # nothing to do
-            pause: ->    # nothing to do
-            send: (string) ->
-                @emit 'data', string
-                @emit 'end'
+        @parsingCallback = callback
 
-        fakeStream = new FakeStream
-        @parse fakeStream, callback
-        fakeStream.send string
+        string.split '\n'
+            .forEach (line) =>  @_processLine line, ->
 
-    parse: (stream, callback) ->
-        result = {}
-        noerror = true
-        lineNumber = 0
-        component = null
-        parent = null
-        completeLine = null
+        @_onEnd()
 
-        stream.on 'end', ->
-            lineParser completeLine if completeLine
-            callback null, result if noerror
 
-        sendError = (msg) ->
-            callback new Error "#{msg} (line #{lineNumber})" if noerror
-            noerror = false
+    # Private methods used in parsers.
 
-        createComponent = (name) ->
-            parent = component
+    _sendError: (msg) ->
+        @parsingCallback new Error "#{msg} (line #{@lineNumber})" if @noerror
+        @noerror = false
 
-            if name is "VCALENDAR"
-                if result.fields?
-                    sendError "Cannot parse more than one calendar"
-                component = new VCalendar()
-                result = component
+    _createComponent: (name) ->
+        @parent = @component
 
-            else if name in Object.keys ICalParser.components
-                component = new ICalParser.components[name]()
+        if name is "VCALENDAR"
+            if @result.fields?
+                @_sendError "Cannot parse more than one calendar"
+            @component = new VCalendar()
+            @result = @component
 
+        else if name in Object.keys ICalParser.components
+            @component = new ICalParser.components[name]()
+
+        else
+            @_sendError "Malformed ical file"
+
+        @component?.parent = @parent
+        @parent?.add @component
+
+    _lineParser: (line) ->
+        tuple = line.trim().split ':'
+
+        if tuple.length < 2
+            @_sendError "Malformed ical file"
+        else
+            key = tuple.shift()
+            value = tuple.join ':'
+
+            if key is "BEGIN"
+                @_createComponent value
+            else if key is "END"
+                @component.extract()
+                @component = @component.parent
+            else if not (@component? or @result?)
+                @_sendError "Malformed ical file"
+            else if key? and key isnt '' and @component?
+                [key, details...] = key.split ';'
+                @component.addRawField key, value, details
+                for detail in details
+                    [pname, pvalue] = detail.split '='
             else
-                sendError "Malformed ical file"
+                @_sendError "Malformed ical file"
 
-            component?.parent = parent
-            parent?.add component
+    _onEnd: =>
+        if @completeLine
+            @_lineParser @completeLine
 
-        lineParser = (line) ->
+        @parsingCallback null, @result if @noerror
+    
+    _processLine: (line, callback) =>
+        @lineNumber++
 
-            tuple = line.trim().split ':'
+        line = line.toString('utf-8').replace "\r", ''
 
-            if tuple.length < 2
-                sendError "Malformed ical file"
-            else
-                key = tuple.shift()
-                value = tuple.join ':'
+        # Skip blank lines and a strange behaviour :
+        # empty lines become <Buffer 30> which is '0' .
+        if line is '' or line is '0'
+            return callback()
 
-                if key is "BEGIN"
-                    createComponent value
-                else if key is "END"
-                    component.extract()
-                    component = component.parent
-                else if not (component? or result?)
-                    sendError "Malformed ical file"
-                else if key? and key isnt '' and component?
-                    [key, details...] = key.split(';')
-                    component.addRawField key, value, details
-                    for detail in details
-                        [pname, pvalue] = detail.split '='
-                else
-                    sendError "Malformed ical file"
+        if line[0] is ' '
+            @completeLine += line.substring 1
+        else
+            @_lineParser @completeLine if @completeLine
+            @completeLine = line
 
-        lazy(stream).lines.forEach (line) ->
-            lineNumber++
+        callback()
 
-            line = line.toString('utf-8').replace "\r", ''
 
-            # Skip blank lines and a strange behaviour :
-            # empty lines become <Buffer 30> which is '0' .
-            if line is '' or line is '0'
-                return
+# Simple Stream to LineStream converter.
+class ReadLineStream
 
-            if line[0] is ' '
-                completeLine += line.substring 1
-            else
-                lineParser completeLine if completeLine
-                completeLine = line
+    createReadLineStream: (stream, processLine, onEnd) ->
+        @stream = stream
+        @waitForData = true
+        @allConsumed = false
+        @processLine = processLine
+        @onEnd = onEnd
+
+        @lastLine = "" # Initialize with empty string, to merge with start.
+        @lines = []
+
+        @stream.on 'end', => @consumed = true 
+        @stream.on 'readable', @onReadable
+
+    onReadable: =>
+        if @waitForData
+            @read()
+
+    read: =>
+        @waitForData = false
+        raw = @stream.read()
+        
+        if raw isnt null
+            rawLines = raw.toString().split '\n'
+            rawLines[0] = @lastLine + rawLines[0]
+
+            @lastLine = rawLines.pop()
+            @lines = rawLines
+            @getLine()
+
+        else if @consumed
+            @processLine @lastLine, @onEnd
+        else
+            @waitForData = true #wait next 'readable' event.
+
+    getLine: =>
+        # Recursive deferral.
+        setTimeout @_getLine, 0
+
+    _getLine: =>
+        if @lines.length
+            line = @lines.shift()
+            @processLine line, @getLine
+        else
+            @read()
+
+
+
