@@ -1,6 +1,7 @@
 fs = require 'fs'
 moment = require 'moment-timezone'
-lazy = require 'lazy'
+byline = require 'byline'
+stream = require 'stream'
 extend = require 'extend'
 uuid = require 'uuid'
 {RRule} = require 'rrule'
@@ -145,6 +146,10 @@ module.exports.VCalendar = class VCalendar extends VComponent
         @addRawField 'VERSION', '2.0'
         @addRawField 'PRODID', prodid
 
+        if @model.name
+            @addTextField 'X-WR-CALNAME', @model.name
+
+
     extract: ->
         super()
         {value} = @getRawField 'PRODID'
@@ -157,7 +162,9 @@ module.exports.VCalendar = class VCalendar extends VComponent
             organization = 'Undefined organization'
             title = 'Undefined title'
 
-        @model = {organization, title}
+        name = @getTextFieldValue 'X-WR-CALNAME'
+
+        @model = {organization, title, name}
 
     # VTimezone management is not included as of 18/09/2014, but code exists
     # anyway to support them if necessary in future"
@@ -738,23 +745,17 @@ module.exports.ICalParser = class ICalParser
         @parse fs.createReadStream(file), callback
 
     parseString: (string, callback) ->
-        class FakeStream extends require('events').EventEmitter
-            readable: true
-            writable: false
-            setEncoding: -> throw new Error 'not implemented'
-            pipe: -> throw new Error 'not implemented'
-            destroy: ->  # nothing to do
-            resume: ->   # nothing to do
-            pause: ->    # nothing to do
-            send: (string) ->
-                @emit 'data', string
-                @emit 'end'
+        fakeStream = new stream.Readable()
+        
+        fakeStream._read = ->
 
-        fakeStream = new FakeStream
         @parse fakeStream, callback
-        fakeStream.send string
+
+        fakeStream.push string
+        fakeStream.push null
 
     parse: (stream, callback) ->
+        stream = byline(stream)
         result = {}
         noerror = true
         lineNumber = 0
@@ -813,18 +814,21 @@ module.exports.ICalParser = class ICalParser
                 else
                     sendError "Malformed ical file"
 
-        lazy(stream).lines.forEach (line) ->
-            lineNumber++
+        stream.on 'data', (line)->
+            stream.pause()
 
+            lineNumber++
             line = line.toString('utf-8').replace "\r", ''
 
             # Skip blank lines and a strange behaviour :
             # empty lines become <Buffer 30> which is '0' .
             if line is '' or line is '0'
-                return
+                return stream.resume()
 
             if line[0] is ' '
                 completeLine += line.substring 1
             else
                 lineParser completeLine if completeLine
                 completeLine = line
+
+            stream.resume()
