@@ -15,7 +15,6 @@ module.exports = (Event) ->
 
             else if not allDay
                 console.log "Recurring events need timezone."
-                return undefined
 
         timezone = @timezone or timezone
 
