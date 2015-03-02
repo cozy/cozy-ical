@@ -508,7 +508,7 @@ module.exports.VEvent = class VEvent extends VComponent
         if @model.created?
             created = moment.tz @model.created, 'UTC'
                                 .format VEvent.icalDTUTCFormat
-        
+
         if @model.mozLastack?
             mozLastack = moment.tz @model.mozLastack, 'UTC'
                                 .format VEvent.icalDTUTCFormat
@@ -524,7 +524,7 @@ module.exports.VEvent = class VEvent extends VComponent
         @addTextField 'SUMMARY', @model.summary or null
         @addRawField 'X-MOZ-LASTACK', mozLastack or null
 
-    extract: ->
+    extract: (defaultTimezone) ->
         iCalFormat = 'YYYYMMDDTHHmmss'
         uid = @getRawField 'UID'
         stampDate = @getRawField('DTSTAMP')?.value or moment()
@@ -540,10 +540,14 @@ module.exports.VEvent = class VEvent extends VComponent
                     allDay = true
                 else
                     [_, timezoneStart] = dtstart.details[0].split '='
-                    if timezoneStart     not in VALID_TZ_LIST
+                    if timezoneStart not in VALID_TZ_LIST
                         timezoneStart = 'UTC'
             else
-                timezoneStart = 'UTC'
+                # if there is no timezone indicator, the date is in local time
+                if dtstart.value.length is 15
+                    timezoneStart = defaultTimezone
+                else # otherwise it's UTC
+                    timezoneStart = 'UTC'
         else
             startDate = moment.tz(moment(), 'UTC').format iCalFormat
             timezoneStart = 'UTC'
@@ -587,7 +591,11 @@ module.exports.VEvent = class VEvent extends VComponent
                 if timezoneEnd not in VALID_TZ_LIST
                     timezoneEnd = 'UTC'
             else
-                timezoneEnd = 'UTC'
+                # if there is no timezone indicator, the date is in local time
+                if dtstart.value.length is 15
+                    timezoneEnd = defaultTimezone
+                else # otherwise it's UTC
+                    timezoneEnd = 'UTC'
 
             endDate = moment.tz(endDate, iCalFormat, timezoneEnd).toDate()
 
@@ -631,6 +639,7 @@ module.exports.VEvent = class VEvent extends VComponent
         if mozLastack?
             mozLastack = moment.tz mozLastack, VEvent.icalDTUTCFormat, 'UTC'
                             .toISOString()
+
         @model =
             uid: uid?.value or uuid.v1()
             stampDate: moment.tz(stampDate, VEvent.icalDTUTCFormat, 'UTC').toDate()
@@ -741,12 +750,27 @@ module.exports.ICalParser = class ICalParser
         STANDARD: VStandard
         DAYLIGHT: VDaylight
 
-    parseFile: (file, callback) ->
+    parseFile: (file, options, callback) ->
+
+        # optional 'options' parameter
+        if arguments.length < 3
+            callback = options
+            @defaultTimezone = 'UTC'
+        else
+            @defaultTimezone = options.defaultTimezone or 'UTC'
+
         @parse fs.createReadStream(file), callback
 
-    parseString: (string, callback) ->
+    parseString: (string, options, callback) ->
+
+        # optional 'options' parameter
+        if arguments.length < 3
+            callback = options
+            @defaultTimezone = 'UTC'
+        else
+            @defaultTimezone = options.defaultTimezone or 'UTC'
+
         fakeStream = new stream.Readable()
-        
         fakeStream._read = ->
 
         @parse fakeStream, callback
@@ -789,7 +813,7 @@ module.exports.ICalParser = class ICalParser
             component?.parent = parent
             parent?.add component
 
-        lineParser = (line) ->
+        lineParser = (line) =>
 
             tuple = line.trim().split ':'
 
@@ -802,7 +826,7 @@ module.exports.ICalParser = class ICalParser
                 if key is "BEGIN"
                     createComponent value
                 else if key is "END"
-                    component.extract()
+                    component.extract @defaultTimezone
                     component = component.parent
                 else if not (component? or result?)
                     sendError "Malformed ical file"
