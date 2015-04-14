@@ -8,7 +8,7 @@ dateFormat = 'YYYY-MM-DD HH:mm:ss Z'
 
 # Local date time are datetime with no timezone information
 # e.g. DTSTART:20150328T095500
-describe.only "Import ICS with local date time (no timezone indicator)", ->
+describe "Import ICS with local date time (no timezone indicator)", ->
 
     DEFAULT_TIMEZONE = 'Europe/Moscow'
 
