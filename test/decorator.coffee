@@ -98,6 +98,12 @@ describe "Cozy models decorator", ->
                 """.replace /\n/g, '\r\n'
 
         describe "Specific cases", ->
+            it 'should generate identical ical as source', ->
+                new ICalParser().parseString globalSource, (err, cal) ->
+                    should.not.exist err
+                    newCal = cal.toString().replace(new RegExp("\r", 'g'), "").split("\n")
+                    sourceCal = globalSource.split("\n")
+                    newCal.should.eql sourceCal
 
             it "should generate a propery Cozy Event for event with duration", ->
                 source = """

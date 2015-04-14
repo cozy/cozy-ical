@@ -78,7 +78,13 @@ module.exports.VComponent = class VComponent
 
     _toStringFields: (buf) ->
         for field in @rawFields
-            buf.addLine "#{field.key}:#{field.value}" if field.value?
+            details = ""
+            if typeof field.details is 'string' and field.details.length > 0
+                details += field.details
+            else if field.details instanceof Array and field.details.length > 0
+                details += ';'+field.details.join(';')
+
+            buf.addLine "#{field.key}#{details}:#{field.value}" if field.value?
 
     _toStringComponents: (buf) ->
         for component in @subComponents
@@ -245,7 +251,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
                 name = attendee.details?.name or attendee.email
                 details += ";CN=#{name}"
                 fieldValue = "mailto:#{attendee.email}"
-                @addRawField "ATTENDEE#{details}", fieldValue, details
+                @addRawField "ATTENDEE", fieldValue, details
         @addTextField 'DESCRIPTION', @model.description
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'REPEAT', @model.repeat or null
