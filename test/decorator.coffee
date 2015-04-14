@@ -103,7 +103,7 @@ describe "Cozy models decorator", ->
                     should.not.exist err
                     newCal = cal.toString().replace(new RegExp("\r", 'g'), "").split("\n")
                     sourceCal = globalSource.split("\n")
-                    newCal.should.equal sourceCal
+                    newCal.should.eql sourceCal
 
             it "should generate a propery Cozy Event for event with duration", ->
                 source = """
