@@ -158,9 +158,11 @@ module.exports.VCalendar = class VCalendar extends VComponent
 
     extract: ->
         super()
-        {value} = @getRawField 'PRODID'
-        extractPRODID = /-\/\/([\w. ]+)\/\/?(?:NONSGML )?(.+)\/\/.*/
-        results = value.match extractPRODID
+        prodId = @getRawField 'PRODID'
+        if prodId
+            {value} = prodId
+            extractPRODID = /-\/\/([\w. ]+)\/\/?(?:NONSGML )?(.+)\/\/.*/
+            results = value.match extractPRODID
 
         if results?
             [_, organization, title] = results
