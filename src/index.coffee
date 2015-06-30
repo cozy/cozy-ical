@@ -387,7 +387,8 @@ module.exports.VTodo = class VTodo extends VComponent
             else
                 timezone = 'UTC'
             startDate = moment.tz startDate, VTodo.icalDTUTCFormat, timezone
-        else if not startDate? and duration?
+
+        if not startDate?
             startDate = moment.tz moment(), 'UTC'
 
         @model =
