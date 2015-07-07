@@ -611,7 +611,27 @@ module.exports.VEvent = class VEvent extends VComponent
         rrule = @getRawField('RRULE')?.value
         if rrule?
             timezone = timezoneStart unless timezoneStart is 'UTC'
-            rruleOptions = RRule.parseString rrule
+            try
+                # Extract the until field from the rrule string.
+                # Split the properties of the field.
+                rrule = rrule.split(';')
+
+                    .map (part) ->
+                        # If it's the 'UNTIL' property and that it doesn't have
+                        # a Z at the end, append it. (see #305)
+                        if part.indexOf('UNTIL') isnt -1 and
+                           part[part.length - 1] isnt 'Z'
+                            part += 'Z'
+
+                        return part
+
+                    .join ';'
+
+                rruleOptions = RRule.parseString rrule
+
+            catch error
+                console.log 'RRule threw an error...'
+                console.log error
 
         attendees = @getRawField 'ATTENDEE', true
         attendees = attendees?.map (attendee) ->
