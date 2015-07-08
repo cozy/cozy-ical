@@ -596,12 +596,12 @@ module.exports.VEvent = class VEvent extends VComponent
         else if endDate?
             # details for a dtend field is timezone indicator
             if dtend.details?.length > 0
-                [_, timezoneEnd] = dtstart.details[0].split '='
+                [_, timezoneEnd] = dtend.details[0].split '='
                 if timezoneEnd not in VALID_TZ_LIST
                     timezoneEnd = 'UTC'
             else
                 # if there is no timezone indicator, the date is in local time
-                if dtstart.value.length is 15
+                if dtend.value.length is 15
                     timezoneEnd = defaultTimezone
                 else # otherwise it's UTC
                     timezoneEnd = 'UTC'
