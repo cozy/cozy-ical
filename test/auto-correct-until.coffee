@@ -1,13 +1,10 @@
-# Tests for the fix of bug #305
+# Tests for the fix of bug cozy/cozy-calendar#305.
 should = require 'should'
 moment = require 'moment-timezone'
 
 {ICalParser} = require '../src/index'
 
-dateFormat = 'YYYY-MM-DD HH:mm:ss Z'
-
 describe "Import ICS with UNTIL property without 'Z' at the end", ->
-
 
     icsEvent = """
     BEGIN:VCALENDAR
