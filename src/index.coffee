@@ -617,11 +617,16 @@ module.exports.VEvent = class VEvent extends VComponent
                 rrule = rrule.split(';')
 
                     .map (part) ->
-                        # If it's the 'UNTIL' property and that it doesn't have
-                        # a Z at the end, append it. (see #305)
-                        if part.indexOf('UNTIL') isnt -1 and
-                           part[part.length - 1] isnt 'Z'
-                            part += 'Z'
+                        # If it's the 'UNTIL' property.
+                        isUntil = part.indexOf('UNTIL') isnt -1
+                        if isUntil
+                            # And if it has a DATE-TIME type, and that it
+                            # doesn't have a Z at the end, append it. (see #305).
+                            [_, dateSection] = part.split('=')
+                            isDateTime =  dateSection.indexOf('T') isnt -1
+                            hasZAtTheEnd = part[part.length - 1] is 'Z'
+                            if isDateTime and not hasZAtTheEnd
+                                part += 'Z'
 
                         return part
 
