@@ -547,6 +547,14 @@ module.exports.VEvent = class VEvent extends VComponent
                 if dtstart.details[0] is 'VALUE=DATE'
                     timezoneStart = 'UTC'
                     allDay = true
+                else if dtstart.details[0] is 'VALUE=DATE-TIME'
+                    timezoneInfos = dtstart.details[1]
+                    if timezoneInfos?
+                        [_, timezoneStart] = dtstart.details[1].split '='
+                        if timezoneStart not in VALID_TZ_LIST
+                            timezoneStart = 'UTC'
+                    else
+                        timezoneStart = 'UTC'
                 else
                     [_, timezoneStart] = dtstart.details[0].split '='
                     if timezoneStart not in VALID_TZ_LIST
@@ -596,9 +604,20 @@ module.exports.VEvent = class VEvent extends VComponent
         else if endDate?
             # details for a dtend field is timezone indicator
             if dtend.details?.length > 0
-                [_, timezoneEnd] = dtend.details[0].split '='
-                if timezoneEnd not in VALID_TZ_LIST
+                if dtend.details[0] is 'VALUE=DATE'
                     timezoneEnd = 'UTC'
+                else if dtend.details[0] is 'VALUE=DATE-TIME'
+                    timezoneInfos = dtend.details[1]
+                    if timezoneInfos?
+                        [_, timezoneEnd] = dtend.details[1].split '='
+                        if timezoneEnd not in VALID_TZ_LIST
+                            timezoneEnd = 'UTC'
+                    else
+                        timezoneEnd = 'UTC'
+                else
+                    [_, timezoneEnd] = dtend.details[0].split '='
+                    if timezoneEnd not in VALID_TZ_LIST
+                        timezoneEnd = 'UTC'
             else
                 # if there is no timezone indicator, the date is in local time
                 if dtend.value.length is 15
