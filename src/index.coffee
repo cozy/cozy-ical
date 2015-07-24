@@ -547,6 +547,14 @@ module.exports.VEvent = class VEvent extends VComponent
                 if dtstart.details[0] is 'VALUE=DATE'
                     timezoneStart = 'UTC'
                     allDay = true
+                else if dtstart.details[0] is 'VALUE=DATE-TIME'
+                    timezoneInfos = dtstart.details[1]
+                    if timezoneInfos?
+                        [_, timezoneStart] = dtstart.details[1].split '='
+                        if timezoneStart not in VALID_TZ_LIST
+                            timezoneStart = 'UTC'
+                    else
+                        timezoneStart = 'UTC'
                 else
                     [_, timezoneStart] = dtstart.details[0].split '='
                     if timezoneStart not in VALID_TZ_LIST
@@ -596,9 +604,20 @@ module.exports.VEvent = class VEvent extends VComponent
         else if endDate?
             # details for a dtend field is timezone indicator
             if dtend.details?.length > 0
-                [_, timezoneEnd] = dtend.details[0].split '='
-                if timezoneEnd not in VALID_TZ_LIST
+                if dtend.details[0] is 'VALUE=DATE'
                     timezoneEnd = 'UTC'
+                else if dtend.details[0] is 'VALUE=DATE-TIME'
+                    timezoneInfos = dtend.details[1]
+                    if timezoneInfos?
+                        [_, timezoneEnd] = dtend.details[1].split '='
+                        if timezoneEnd not in VALID_TZ_LIST
+                            timezoneEnd = 'UTC'
+                    else
+                        timezoneEnd = 'UTC'
+                else
+                    [_, timezoneEnd] = dtend.details[0].split '='
+                    if timezoneEnd not in VALID_TZ_LIST
+                        timezoneEnd = 'UTC'
             else
                 # if there is no timezone indicator, the date is in local time
                 if dtend.value.length is 15
@@ -617,11 +636,16 @@ module.exports.VEvent = class VEvent extends VComponent
                 rrule = rrule.split(';')
 
                     .map (part) ->
-                        # If it's the 'UNTIL' property and that it doesn't have
-                        # a Z at the end, append it. (see #305)
-                        if part.indexOf('UNTIL') isnt -1 and
-                           part[part.length - 1] isnt 'Z'
-                            part += 'Z'
+                        # If it's the 'UNTIL' property.
+                        isUntil = part.indexOf('UNTIL') isnt -1
+                        if isUntil
+                            # And if it has a DATE-TIME type, and that it
+                            # doesn't have a Z at the end, append it. (see #305).
+                            [_, dateSection] = part.split('=')
+                            isDateTime =  dateSection.indexOf('T') isnt -1
+                            hasZAtTheEnd = part[part.length - 1] is 'Z'
+                            if isDateTime and not hasZAtTheEnd
+                                part += 'Z'
 
                         return part
 
