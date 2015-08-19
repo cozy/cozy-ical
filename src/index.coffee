@@ -263,6 +263,7 @@ module.exports.VAlarm = class VAlarm extends VComponent
         @addRawField 'REPEAT', @model.repeat or null
         @addTextField 'SUMMARY', @model.summary
 
+
     extract: ->
         super()
 
@@ -526,13 +527,28 @@ module.exports.VEvent = class VEvent extends VComponent
             mozLastack = moment.tz @model.mozLastack, 'UTC'
                                 .format VEvent.icalDTUTCFormat
 
+
         @addRawField 'CATEGORIES', @model.categories or null
         @addRawField 'CREATED', created or null
         @addTextField 'DESCRIPTION', @model.description or null
         @addRawField 'DURATION', @model.duration or null
         @addRawField 'LAST-MODIFIED', lastModification or null
         @addTextField 'LOCATION', @model.location or null
-        @addRawField 'ORGANIZER', @model.organizer or null
+
+        # `@model.organizer` can be just the mandatory field (email), or an
+        # object with a display name and an email.
+        if @model.organizer?.displayName?
+            organizerEmail = @model.organizer.email
+            details = ";CN=#{@model.organizer.displayName}"
+        else if @model.organizer?
+            organizerEmail = @model.organizer
+            details = ""
+
+        # Only add the field if there is an email address.
+        if organizerEmail?
+            organizer = "mailto:#{organizerEmail}"
+            @addRawField "ORGANIZER#{details}", organizer or null
+
         @addRawField 'RRULE', rrule or null
         @addTextField 'SUMMARY', @model.summary or null
         @addRawField 'X-MOZ-LASTACK', mozLastack or null
