@@ -343,3 +343,64 @@ describe "vEvent", ->
                 LOCATION:#{options.location}
                 SUMMARY:Event summary\\, should escape "\\;"
                 END:VEVENT""".replace /\n/g, '\r\n'
+
+    describe "Creating a vEvent with an ORGANIZER", ->
+        it "should render properly with the simple form", ->
+            options =
+                uid: '[id-1]'
+                stampDate: new Date 2014, 11, 4, 9, 30
+                startDate: new Date 2014, 11, 4, 9, 30
+                endDate: new Date 2014, 11, 4, 10, 30
+                summary: 'Test'
+                location: 'some place'
+                created: '2014-11-10T14:00:00.000Z'
+                lastModification: '2014-11-21T13:30:00.000Z'
+                organizer: 'john.doe@test.com'
+            formatter = 'YYYYMMDD[T]HHmm[00Z]'
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
+            formattedStartDate = moment(options.startDate).format formatter
+            formattedEndDate = moment(options.endDate).format formatter
+            event = new VEvent options
+            output = event.toString()
+            output.should.equal """
+                BEGIN:VEVENT
+                UID:#{options.uid}
+                DTSTAMP:#{formattedStampDate}
+                DTSTART:#{formattedStartDate}
+                DTEND:#{formattedEndDate}
+                CREATED:20141110T140000Z
+                LAST-MODIFIED:20141121T133000Z
+                LOCATION:#{options.location}
+                ORGANIZER:mailto:john.doe@test.com
+                SUMMARY:Test
+                END:VEVENT""".replace /\n/g, '\r\n'
+
+        it "should render properly with the complex form", ->
+            options =
+                uid: '[id-1]'
+                stampDate: new Date 2014, 11, 4, 9, 30
+                startDate: new Date 2014, 11, 4, 9, 30
+                endDate: new Date 2014, 11, 4, 10, 30
+                summary: 'Test'
+                location: 'some place'
+                created: '2014-11-10T14:00:00.000Z'
+                lastModification: '2014-11-21T13:30:00.000Z'
+                organizer: displayName: 'John Doe', email: 'john.doe@test.com'
+            formatter = 'YYYYMMDD[T]HHmm[00Z]'
+            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
+            formattedStartDate = moment(options.startDate).format formatter
+            formattedEndDate = moment(options.endDate).format formatter
+            event = new VEvent options
+            output = event.toString()
+            output.should.equal """
+                BEGIN:VEVENT
+                UID:#{options.uid}
+                DTSTAMP:#{formattedStampDate}
+                DTSTART:#{formattedStartDate}
+                DTEND:#{formattedEndDate}
+                CREATED:20141110T140000Z
+                LAST-MODIFIED:20141121T133000Z
+                LOCATION:#{options.location}
+                ORGANIZER;CN=John Doe:mailto:john.doe@test.com
+                SUMMARY:Test
+                END:VEVENT""".replace /\n/g, '\r\n'
