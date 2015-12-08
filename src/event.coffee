@@ -16,6 +16,14 @@ module.exports = (Event) ->
             else if not allDay
                 console.log "Recurring events need timezone."
 
+            # some events, imported from an external source, have a wrong RRUle,
+            # with a TZID, so we need to filter them
+            @rrule = @rrule.split(';').filter (rule) ->
+                return rule isnt '' and rule.substr(0, 5) isnt 'TZID='
+            .join ';'
+            if @rrule.length is 0
+                @rrule = null
+
         timezone = @timezone or timezone
 
         rrule = if @rrule? then RRule.parseString @rrule else null
