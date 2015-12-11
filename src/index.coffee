@@ -669,9 +669,11 @@ module.exports.VEvent = class VEvent extends VComponent
 
                         return part
 
-                    .join ';'
+                    .filter (rule) ->
+                        return rule isnt '' and rule.substr(0, 5) isnt 'TZID='
 
-                rruleOptions = RRule.parseString rrule
+                if rrule.length > 0
+                    rruleOptions = RRule.parseString rrule.join(';')
 
             catch error
                 console.log 'RRule threw an error...'
