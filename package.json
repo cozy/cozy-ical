@@ -32,15 +32,15 @@
     "moment-timezone": "0.4.0",
     "rrule": "2.1.0",
     "byline": "4.2.1",
-    "printit": "0.1.8",
+    "printit": "0.1.15",
     "extend": "2.0.0",
     "uuid": "2.0.1"
   },
   "devDependencies": {
     "coffee-script": "1.8.0",
+    "coffeelint": "1.6.1",
     "mocha": "2.0.1",
     "should": "4.1.0",
-    "time": "0.11.0",
-    "coffeelint": "1.6.1"
+    "time": "0.11.4"
   }
 }
