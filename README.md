@@ -173,6 +173,13 @@ This library is meant to support all iCal features as defined in [RFC 5545](http
 ### vTimezone
 * not supported at all
 
+## Test the parsing
+
+If you want to test the parsing of an iCalendar file, just run:
+```
+    node index.js xxxx.ics
+```
+
 ## What is Cozy?
 
 ![Cozy Logo](https://raw.github.com/cozy/cozy-setup/gh-pages/assets/images/happycloud.png)

@@ -883,7 +883,7 @@ module.exports.ICalParser = class ICalParser
                 component = new ICalParser.components[name]()
 
             else
-                sendError "Malformed ical file"
+                sendError "Malformed ical file, unknown component #{name}"
 
             component?.parent = parent
             parent?.add component
@@ -893,7 +893,10 @@ module.exports.ICalParser = class ICalParser
             tuple = line.trim().split ':'
 
             if tuple.length < 2
-                sendError "Malformed ical file"
+                err = "Malformed ical file: missing ':'"
+                console.log err
+                console.log line
+                sendError err
             else
                 key = tuple.shift()
                 value = tuple.join ':'
@@ -904,14 +907,20 @@ module.exports.ICalParser = class ICalParser
                     component.extract @defaultTimezone
                     component = component.parent
                 else if not (component? or result?)
-                    sendError "Malformed ical file"
+                    err = "Malformed ical file: no component nor result"
+                    console.log err
+                    console.log line
+                    sendError err
                 else if key? and key isnt '' and component?
                     [key, details...] = key.split(';')
                     component.addRawField key, value, details
                     for detail in details
                         [pname, pvalue] = detail.split '='
                 else
-                    sendError "Malformed ical file"
+                    err = "Malformed ical file"
+                    console.log err
+                    console.log line
+                    sendError err
 
         stream.on 'data', (line)->
             stream.pause()
@@ -924,8 +933,8 @@ module.exports.ICalParser = class ICalParser
             if line is '' or line is '0'
                 return stream.resume()
 
-            if line[0] is ' '
-                completeLine += line.substring 1
+            if /^\s/.test line[0]
+                completeLine += line.replace /^\s+/, ''
             else
                 lineParser completeLine if completeLine
                 completeLine = line
