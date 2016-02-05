@@ -933,7 +933,7 @@ module.exports.ICalParser = class ICalParser
             if line is '' or line is '0'
                 return stream.resume()
 
-            if line[0] is ' '
+            if /^\s/.test line[0]
                 completeLine += line.replace /^\s+/, ''
             else
                 lineParser completeLine if completeLine
