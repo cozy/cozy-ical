@@ -80,7 +80,7 @@ output:
 
 
 ```javascript
-var calString = "BEGIN:VCALENDAR
+var calString = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
 BEGIN:VTODO
@@ -93,7 +93,7 @@ REPEAT:1
 TRIGGER:20130609T150000Z
 END:VALARM
 END:VTODO
-END:VCALENDAR";
+END:VCALENDAR`;
 
 parser = new ICalParser();
 parser.parseString(calString, function(err, cal) {
