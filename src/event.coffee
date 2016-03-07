@@ -91,6 +91,8 @@ module.exports = (Event) ->
         event.description = model.summary or ''
         event.details = model.description or ''
         event.place = model.location
+        delete model.rrule?.bynmonthday
+        delete model.rrule?.bynweekday
         event.rrule = new RRule(model.rrule).toString()
         defaultCozyStatus = 'INVITATION-NOT-SENT'
         event.attendees = model.attendees?.map (attendee, index) ->
