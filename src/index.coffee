@@ -890,6 +890,11 @@ module.exports.ICalParser = class ICalParser
 
         lineParser = (line) =>
 
+            # Fix for #47 : encode quoted string to prevent
+            # some characters lik : or , to make the parsing fail
+            line = line.replace /"([^"]+)"/g, (str) ->
+                encodeURIComponent str
+
             tuple = line.trim().split ':'
 
             if tuple.length < 2
@@ -898,7 +903,10 @@ module.exports.ICalParser = class ICalParser
                 console.log line
                 sendError err
             else
-                key = tuple.shift()
+                # Decode quoted strings
+                key = tuple.shift().replace /"([^"]+)"/g, (str) ->
+                    decodeURIComponent str
+
                 value = tuple.join ':'
 
                 if key is "BEGIN"
