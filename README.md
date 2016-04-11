@@ -22,6 +22,7 @@ below for details.
 var VCalendar = require('cozy-ical').VCalendar;
 var VEvent = require('cozy-ical').VEvent;
 var VTodo = require('cozy-ical').VTodo;
+var VAlarm = require('cozy-ical').VAlarm;
 
 var cal = new VCalendar({
   organization: 'Cozy Cloud',
@@ -30,14 +31,17 @@ var cal = new VCalendar({
 
 var date = new Date(2013, 5, 9, 15, 0, 0);
 var vtodo = new VTodo({
+  stampDate: date,
   startDate: date,
-  summary: 'jhon',
-  description: 'my description'
+  summary: 'john',
+  description: 'my description',
+  uid: "9615"
 });
 
 var startDate = new Date(2013, 5, 9, 15, 0, 0);
 var endDate = new Date(2013, 5, 10, 15, 0, 0);
 var vevent = new VEvent({
+  stampDate: startDate,
   startDate: startDate,
   endDate: endDate,
   description: "desc",
@@ -45,7 +49,13 @@ var vevent = new VEvent({
   uid: "3615"
 });
 
-vtodo.addAlarm(date);
+vtodo.addAlarm({
+  action: VAlarm.EMAIL_ACTION,
+  trigger: "-P3D",
+  description: 'alarm for todo',
+  summary: 'john',
+  attendees: []
+});
 cal.add(vtodo);
 cal.add(vevent);
 
@@ -56,23 +66,27 @@ output:
 
     BEGIN:VCALENDAR
     VERSION:2.0
-    PRODID:-//Cozy Cloud//NONSGML Cozy Agenda//EN
+    PRODID:-//Cozy Cloud//NONSGML Cozy Calendar//EN
     BEGIN:VTODO
-    DTSTAMP:20130609T150000Z
-    SUMMARY:my description
-    UID:jhon
+    UID:9615
+    DTSTAMP:20130609T130000Z
+    DESCRIPTION:my description
+    DTSTART:20130609T150000Z
+    SUMMARY:john
     BEGIN:VALARM
-    ACTION:DISPLAY
-    REPEAT:1
-    TRIGGER:20130609T150000Z
+    ACTION:EMAIL
+    TRIGGER:-P3D
+    DESCRIPTION:alarm for todo
+    SUMMARY:john
     END:VALARM
     END:VTODO
     BEGIN:VEVENT
-    DESCRIPTION:desc
+    UID:3615
+    DTSTAMP:20130609T130000Z
     DTSTART:20130609T150000Z
     DTEND:20130610T150000Z
+    DESCRIPTION:desc
     LOCATION:loc
-    UID:3615
     END:VEVENT
     END:VCALENDAR
 
