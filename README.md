@@ -112,9 +112,9 @@ END:VCALENDAR`;
 parser = new ICalParser();
 parser.parseString(calString, function(err, cal) {
   console.log(cal.name);
-  console.log(cal.fields.PRODID);
-  console.log(cal.fields.subCompontents[0].name);
-  console.log(cal.fields.subCompontents[0].fields.SUMMARY);
+  console.log(cal.getRawValue('PRODID'));
+  console.log(cal.subComponents[0].name);
+  console.log(cal.subComponents[0].getRawValue('SUMMARY'));
 });
 ```
 
