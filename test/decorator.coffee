@@ -62,7 +62,7 @@ describe "Cozy models decorator", ->
             # events comes from extractEvents, that uses fromIcal under the hood
             event = @events[0]
             should.exist event
-            event.should.have.property 'id', 'aeba6310b07a22a72423b2b11f320692'
+            event.should.have.property 'uid', 'aeba6310b07a22a72423b2b11f320692'
             event.should.have.property 'description', 'Recurring event'
             event.should.have.property 'start', '2014-11-06T12:00:00.000'
             event.should.have.property 'end', '2014-11-06T13:00:00.000'
