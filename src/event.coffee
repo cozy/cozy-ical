@@ -42,7 +42,7 @@ module.exports = (Event) ->
                 endDate: moment.tz @end, timezone
                 summary: @description
                 location: @place
-                uid: @id
+                uid: @uid or @id
                 description: @details
                 allDay: allDay
                 rrule: rrule
@@ -88,6 +88,7 @@ module.exports = (Event) ->
 
         timezone = model.timezone or 'UTC'
         event.id = model.uid if model.uid?
+        event.uid = model.uid if model.uid?
         event.description = model.summary or ''
         event.details = model.description or ''
         event.place = model.location
