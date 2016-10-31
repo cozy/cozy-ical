@@ -12,7 +12,7 @@ module.exports.escapeText = (s) ->
     if not s?
         return s
     t = s.replace /([,;\\])/ig, "\\$1"
-    t = t.replace /\n/g, '\\n'
+    t = t.replace /\r?\n/g, '\\n'
 
     return t
 
@@ -21,5 +21,5 @@ module.exports.unescapeText = (t) ->
         return t
     s = t.replace /\\n/g, '\n'
     s = s.replace /\\([,;\\])/ig, "$1"
-    
+
     return s
