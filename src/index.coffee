@@ -364,9 +364,14 @@ module.exports.VTodo = class VTodo extends VComponent
             startDate = moment @model.startDate
             formattedStartDate = startDate.format VTodo.icalDTUTCFormat
 
+        # Formats due date if it exists
+        if @model.due?
+            dueDate = moment @model.due
+            formattedDueDate = dueDate.format VTodo.icalDTUTCFormat
+
         @addTextField 'DESCRIPTION', @model.description or null
         @addRawField 'DTSTART', formattedStartDate or null
-        @addRawField 'DUE', @model.due or null
+        @addRawField 'DUE', formattedDueDate or null
         @addRawField 'DURATION', @model.duration or null
         @addTextField 'SUMMARY', @model.summary or null
 
