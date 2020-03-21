@@ -53,53 +53,45 @@ describe "vEvent", ->
         it "should render properly", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 9, 30
-                startDate: new Date 2014, 11, 4, 9, 30
-                endDate: new Date 2014, 11, 4, 10, 30
+                stampDate: Date.UTC 2014, 11, 4, 9, 30
+                startDate: Date.UTC 2014, 11, 4, 9, 30
+                endDate: Date.UTC 2014, 11, 4, 10, 30
                 summary: 'Event summary'
                 location: 'some place'
                 created: '2014-11-10T14:00:00.000Z'
                 lastModification: '2014-11-21T13:30:00.000Z'
-            formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART:#{formattedStartDate}
-                DTEND:#{formattedEndDate}
+                DTSTAMP:20141204T093000Z
+                DTSTART:20141204T093000Z
+                DTEND:20141204T103000Z
                 CREATED:20141110T140000Z
                 LAST-MODIFIED:20141121T133000Z
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
 
-    describe "Creating a vEvent for on punctual event with a timezone", ->
+    describe "Creating a vEvent for a punctual event with a timezone", ->
         it "should render properly", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 9, 30
-                startDate: new Date 2014, 11, 4, 9, 30
-                endDate: new Date 2014, 11, 4, 10, 30
+                stampDate: Date.UTC 2014, 11, 4, 9, 30
+                startDate: Date.UTC 2014, 11, 4, 9, 30
+                endDate: Date.UTC 2014, 11, 4, 10, 30
                 summary: 'Event summary'
                 timezone: 'Europe/Paris'
 
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formatter = 'YYYYMMDD[T]HHmm[00]'
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART;TZID=#{options.timezone}:#{formattedStartDate}
-                DTEND;TZID=#{options.timezone}:#{formattedEndDate}
+                DTSTAMP:20141204T093000Z
+                DTSTART;TZID=Europe/Paris:20141204T103000
+                DTEND;TZID=Europe/Paris:20141204T113000
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
 
@@ -107,25 +99,21 @@ describe "vEvent", ->
          it "should render properly", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4
-                startDate: new Date 2014, 11, 4
-                endDate: new Date 2014, 11, 4
+                stampDate: Date.UTC 2014, 11, 4
+                startDate: Date.UTC 2014, 11, 4
+                endDate: Date.UTC 2014, 11, 4
                 summary: 'Event summary'
                 location: 'some place'
                 allDay: true
 
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formatter = 'YYYYMMDD'
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART;VALUE=DATE:#{formattedStartDate}
-                DTEND;VALUE=DATE:#{formattedEndDate}
+                DTSTAMP:20141204T000000Z
+                DTSTART;VALUE=DATE:20141204
+                DTEND;VALUE=DATE:20141204
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
@@ -141,8 +129,8 @@ describe "vEvent", ->
 
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4
-                startDate: new Date 2014, 11, 4
+                stampDate: Date.UTC 2014, 11, 4
+                startDate: Date.UTC 2014, 11, 4
                 rrule:
                     freq: ruleOptions.freq
                     interval: ruleOptions.interval
@@ -159,17 +147,13 @@ describe "vEvent", ->
                 until: ruleOptions.until
                 byweekday: ruleOptions.byweekday
 
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formatter = 'YYYYMMDD[T]HHmm[00]'
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART;TZID=#{options.timezone}:#{formattedStartDate}
+                DTSTAMP:20141204T000000Z
+                DTSTART;TZID=Europe/Paris:20141204T010000
                 RRULE:#{rrule}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
@@ -183,8 +167,8 @@ describe "vEvent", ->
 
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4
-                startDate: new Date 2014, 11, 4
+                stampDate: Date.UTC 2014, 11, 4
+                startDate: Date.UTC 2014, 11, 4
                 rrule:
                     freq: ruleOptions.freq
                     until: ruleOptions.until
@@ -198,17 +182,13 @@ describe "vEvent", ->
                 freq: ruleOptions.freq
                 until: ruleOptions.until
 
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formatter = 'YYYYMMDD'
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART;VALUE=DATE:#{formattedStartDate}
+                DTSTAMP:20141204T000000Z
+                DTSTART;VALUE=DATE:20141204
                 RRULE:#{rrule}
                 SUMMARY:#{options.summary}
                 END:VEVENT""".replace /\n/g, '\r\n'
@@ -217,28 +197,24 @@ describe "vEvent", ->
          it "should render properly", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 10, 0
-                startDate: new Date 2014, 11, 4, 10, 0
-                endDate: new Date 2014, 11, 4, 11, 0
+                stampDate: Date.UTC 2014, 11, 4, 10, 0
+                startDate: Date.UTC 2014, 11, 4, 10, 0
+                endDate: Date.UTC 2014, 11, 4, 11, 0
                 summary: 'Event summary'
                 location: 'some place'
                 attendees: [
                     email: 'test@provider.tld', details: status: 'NEEDS-ACTION'
                 ]
 
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             expectedEmail = options.attendees[0].email
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART:#{formattedStartDate}
-                DTEND:#{formattedEndDate}
+                DTSTAMP:20141204T100000Z
+                DTSTART:20141204T100000Z
+                DTEND:20141204T110000Z
                 ATTENDEE;PARTSTAT=NEEDS-ACTION;CN=#{expectedEmail}:mailto:#{expectedEmail}
                 LOCATION:#{options.location}
                 SUMMARY:#{options.summary}
@@ -246,10 +222,8 @@ describe "vEvent", ->
 
     describe 'Timezone support for vEvents', ->
         it 'should support timezones, set on Date objects', ->
-            startDate = new time.Date 2013, 5, 9, 15, 0, 0
-            endDate = new time.Date 2013, 5, 10, 15, 0, 0
-            startDate.setTimezone 'Europe/Moscow'
-            endDate.setTimezone 'Europe/Moscow'
+            startDate = new time.Date 2013, 5, 9, 15, 0, 0, 'Europe/Moscow'
+            endDate = new time.Date 2013, 5, 10, 15, 0, 0, 'Europe/Moscow'
             vevent = new VEvent
                 stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
@@ -268,8 +242,8 @@ describe "vEvent", ->
                 END:VEVENT""".replace /\n/g, '\r\n'
 
         it 'should support timezones, set via property', ->
-            startDate = new time.Date 2013, 5, 9, 15, 0, 0
-            endDate = new time.Date 2013, 5, 10, 15, 0, 0
+            startDate = new time.Date 2013, 5, 9, 11, 0, 0, 'UTC'
+            endDate = new time.Date 2013, 5, 10, 11, 0, 0, 'UTC'
             vevent = new VEvent
                 stampDate: Date.UTC 2013, 5, 9, 15
                 startDate: startDate
@@ -317,26 +291,22 @@ describe "vEvent", ->
         it "should render properly", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 9, 30
-                startDate: new Date 2014, 11, 4, 9, 30
-                endDate: new Date 2014, 11, 4, 10, 30
+                stampDate: Date.UTC 2014, 11, 4, 9, 30
+                startDate: Date.UTC 2014, 11, 4, 9, 30
+                endDate: Date.UTC 2014, 11, 4, 10, 30
                 summary: 'Event summary, should escape ";"'
                 location: 'some place'
                 description: 'Event description on, \n line 2,\n line 3.'
                 created: '2014-11-10T14:00:00.000Z'
                 lastModification: '2014-11-21T13:30:00.000Z'
-            formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART:#{formattedStartDate}
-                DTEND:#{formattedEndDate}
+                DTSTAMP:20141204T093000Z
+                DTSTART:20141204T093000Z
+                DTEND:20141204T103000Z
                 CREATED:20141110T140000Z
                 DESCRIPTION:Event description on\\, \\n line 2\\,\\n line 3.
                 LAST-MODIFIED:20141121T133000Z
@@ -348,26 +318,22 @@ describe "vEvent", ->
         it "should render properly with the simple form", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 9, 30
-                startDate: new Date 2014, 11, 4, 9, 30
-                endDate: new Date 2014, 11, 4, 10, 30
+                stampDate: Date.UTC 2014, 11, 4, 9, 30
+                startDate: Date.UTC 2014, 11, 4, 9, 30
+                endDate: Date.UTC 2014, 11, 4, 10, 30
                 summary: 'Test'
                 location: 'some place'
                 created: '2014-11-10T14:00:00.000Z'
                 lastModification: '2014-11-21T13:30:00.000Z'
                 organizer: 'john.doe@test.com'
-            formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART:#{formattedStartDate}
-                DTEND:#{formattedEndDate}
+                DTSTAMP:20141204T093000Z
+                DTSTART:20141204T093000Z
+                DTEND:20141204T103000Z
                 CREATED:20141110T140000Z
                 LAST-MODIFIED:20141121T133000Z
                 LOCATION:#{options.location}
@@ -378,26 +344,22 @@ describe "vEvent", ->
         it "should render properly with the complex form", ->
             options =
                 uid: '[id-1]'
-                stampDate: new Date 2014, 11, 4, 9, 30
-                startDate: new Date 2014, 11, 4, 9, 30
-                endDate: new Date 2014, 11, 4, 10, 30
+                stampDate: Date.UTC 2014, 11, 4, 9, 30
+                startDate: Date.UTC 2014, 11, 4, 9, 30
+                endDate: Date.UTC 2014, 11, 4, 10, 30
                 summary: 'Test'
                 location: 'some place'
                 created: '2014-11-10T14:00:00.000Z'
                 lastModification: '2014-11-21T13:30:00.000Z'
                 organizer: displayName: 'John Doe', email: 'john.doe@test.com'
-            formatter = 'YYYYMMDD[T]HHmm[00Z]'
-            formattedStampDate = moment(options.stampDate).tz('UTC').format DTSTAMP_FORMATTER
-            formattedStartDate = moment(options.startDate).format formatter
-            formattedEndDate = moment(options.endDate).format formatter
             event = new VEvent options
             output = event.toString()
             output.should.equal """
                 BEGIN:VEVENT
                 UID:#{options.uid}
-                DTSTAMP:#{formattedStampDate}
-                DTSTART:#{formattedStartDate}
-                DTEND:#{formattedEndDate}
+                DTSTAMP:20141204T093000Z
+                DTSTART:20141204T093000Z
+                DTEND:20141204T103000Z
                 CREATED:20141110T140000Z
                 LAST-MODIFIED:20141121T133000Z
                 LOCATION:#{options.location}
