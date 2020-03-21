@@ -136,7 +136,7 @@ module.exports.VCalendar = class VCalendar extends VComponent
     name: 'VCALENDAR'
 
     constructor: (options) ->
-        super
+        super options
         @vtimezones = {}
 
     validate: ->
@@ -745,7 +745,7 @@ module.exports.VTimezone = class VTimezone extends VComponent
 
     # constructor: (timezone) ->
     constructor: (options) ->
-        super
+        super options
         # During parsing, VTimezone are initialized without any property,
         # so we skip the processing below
         if not options
@@ -783,7 +783,7 @@ module.exports.VStandard = class VStandard extends VComponent
     name: 'STANDARD'
 
     constructor: (options) ->
-        super
+        super options
         # During parsing, VStandard are initialized without any property,
         # so we skip the processing below
         if not options
@@ -803,7 +803,7 @@ module.exports.VDaylight = class VDaylight extends VComponent
     name: 'DAYLIGHT'
 
     constructor: (options) ->
-        super
+        super options
         # During parsing, VDaylight are initialized without any property,
         # so we skip the processing below
         if not options
