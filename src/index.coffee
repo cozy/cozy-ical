@@ -508,9 +508,11 @@ module.exports.VEvent = class VEvent extends VComponent
         @addRawField 'UID', @model.uid
         @addRawField 'DTSTAMP', stampDate.format VEvent.icalDTUTCFormat
 
-        @addRawField fieldStart, moment(@model.startDate).format formatStart
+        fieldStartValue = moment(@model.startDate).tz(timezoneStart || 'UTC')
+        @addRawField fieldStart, fieldStartValue.format formatStart
         if @model.endDate?
-            @addRawField fieldEnd, moment(@model.endDate).format formatEnd
+            fieldEndValue = moment(@model.endDate).tz(timezoneEnd || 'UTC')
+            @addRawField fieldEnd, fieldEndValue.format formatEnd
 
         if @model.attendees?
             for attendee in @model.attendees
