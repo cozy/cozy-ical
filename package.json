@@ -29,17 +29,17 @@
   "license": "MIT",
   "readmeFilename": "README.md",
   "dependencies": {
-    "moment-timezone": "0.5.3",
-    "rrule": "2.1.0",
     "byline": "4.2.1",
+    "extend": "^3.0.2",
+    "moment-timezone": "0.5.3",
     "printit": "0.1.19",
-    "extend": "3.0.0",
+    "rrule": "2.1.0",
     "uuid": "2.0.1"
   },
   "devDependencies": {
-    "coffee-script": "1.10.0",
+    "coffeescript": "^2.5.1",
     "coffeelint": "^2.1.0",
-    "mocha": "^5.2.0",
+    "mocha": "^7.1.1",
     "should": "8.3.0",
     "time": "0.12.0"
   }
